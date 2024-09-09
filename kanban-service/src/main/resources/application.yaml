@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: kanban-service
+  data:
+    mongodb:
+      uri: mongodb+srv://kanban:RCq6dizoH4fovD6b@cluster0.vkzhm.mongodb.net/kanban?retryWrites=true&w=majority&appName=Cluster0
+      authentication-database: admin
+
+
+server:
+  port: 3001
+  servlet:
+    context-path: /
+
