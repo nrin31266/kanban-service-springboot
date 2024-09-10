@@ -1,4 +1,4 @@
-package com.rin.kanban.dto;
+package com.rin.apigateway.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
@@ -12,8 +12,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ApiResponse<T> {
     @Builder.Default
-    private int code = 1000;
+    int code = 1000;
 
-    private String message;
-    private T result;
+    String message;
+    T result;
 }

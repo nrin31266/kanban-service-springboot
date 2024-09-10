@@ -12,6 +12,10 @@ public enum ErrorCode {
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     PASSWORD_INVALID(1008, "Password needs at least 8 characters", HttpStatus.BAD_REQUEST),
     EMAIL_EXISTS(1009, "Email already exists", HttpStatus.BAD_REQUEST),
+    USER_NOT_FOUND(10010, "User not found", HttpStatus.NOT_FOUND),
+    INVALID_EMAIL(10011, "Invalid email", HttpStatus.BAD_REQUEST),
+    INVALID_FIELD(10012, "Invalid field", HttpStatus.BAD_REQUEST),
+    TOKEN_EXPIRED(10013, "Token expired", HttpStatus.UNAUTHORIZED),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

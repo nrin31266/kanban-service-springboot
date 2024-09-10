@@ -4,3 +4,20 @@ networks:
   kanban-network:
     driver: bridge
 
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb-kanban
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: nrin31266
+      MONGO_INITDB_ROOT_PASSWORD: 16092005
+      MONGO_INITDB_DATABASE: kanban
+    networks:
+      - kanban-network
+
+volumes:
+  mongo_data:
