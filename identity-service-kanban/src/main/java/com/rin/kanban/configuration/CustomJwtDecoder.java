@@ -1,14 +1,8 @@
 package com.rin.kanban.configuration;
 
 import com.nimbusds.jwt.SignedJWT;
-import com.rin.kanban.dto.request.IntrospectRequest;
 import com.rin.kanban.exception.AppException;
 import com.rin.kanban.exception.ErrorCode;
-import com.rin.kanban.service.AuthenticationService;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;

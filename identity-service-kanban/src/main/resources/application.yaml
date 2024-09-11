@@ -3,7 +3,7 @@ spring:
     name: kanban-service
   data:
     mongodb:
-      uri: mongodb://nrin31266:16092005@localhost:27017/kanban?authSource=admin
+      uri: mongodb://nrin31266:16092005@localhost:27017/identity-kanban?authSource=admin
       authentication-database: admin
 
 jwt:

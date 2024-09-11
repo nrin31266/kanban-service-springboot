@@ -12,7 +12,7 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: kanban-service
+        - id: identity-service-kanban
           uri: http://localhost:3001
           predicates:
             - Path=${app.api-prefix}/kanban/**
