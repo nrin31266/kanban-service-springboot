@@ -39,6 +39,7 @@ public class AuthenticationFilter implements GlobalFilter, Order {
     private String[] publicEndpoint = {
             "/kanban/auth/.*",
             "/kanban/users/create",
+            "/kanban/auth/outbound/google-login"
     };
 
     @Override

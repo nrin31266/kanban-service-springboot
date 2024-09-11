@@ -39,7 +39,9 @@ public class UserService {
         }
         User user = userMapper.toUser(request);
         user.setRoles(getRoles(List.of(PredefinedRole.USER.name())));
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if ((request.getPassword() != null)) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
         return userMapper.toUserResponse(userRepository.save(user));
     }
     @PostAuthorize("hasRole('ADMIN')")

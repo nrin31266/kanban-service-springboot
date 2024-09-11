@@ -14,3 +14,7 @@ server:
   servlet:
     context-path: /kanban
 
+firebase:
+  config:
+    path:
+      classpath: firebase/credentials.json
