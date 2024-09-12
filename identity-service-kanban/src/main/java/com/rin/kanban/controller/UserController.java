@@ -38,4 +38,12 @@ public class UserController {
                 .build();
     }
 
+    @DeleteMapping("/delete-by-email/{email}")
+    ApiResponse deleteUserByUserName(@PathVariable("email") String email) {
+        userService.deleteUserByEmail(email);
+        return ApiResponse.builder()
+                .message("Successfully delete a user with email: " + email)
+                .build();
+    }
+
 }

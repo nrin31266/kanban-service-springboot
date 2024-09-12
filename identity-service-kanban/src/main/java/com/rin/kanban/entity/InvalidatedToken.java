@@ -1,9 +1,9 @@
 package com.rin.kanban.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.util.Date;
 
@@ -13,9 +13,9 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Document("invalidated-token")
+@Entity
 public class InvalidatedToken {
-    @MongoId
+    @Id
     String id;
     Date expiryTime;
 }

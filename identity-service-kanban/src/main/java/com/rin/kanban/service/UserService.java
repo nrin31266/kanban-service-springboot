@@ -1,8 +1,8 @@
 package com.rin.kanban.service;
 
-import com.rin.kanban.constant.PredefinedRole;
 import com.rin.kanban.dto.request.CreateUserRequest;
 import com.rin.kanban.dto.response.UserResponse;
+import com.rin.kanban.entity.Permission;
 import com.rin.kanban.entity.Role;
 import com.rin.kanban.entity.User;
 import com.rin.kanban.exception.AppException;
@@ -10,7 +10,6 @@ import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.UserMapper;
 import com.rin.kanban.repository.RoleRepository;
 import com.rin.kanban.repository.UserRepository;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -18,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -33,12 +31,20 @@ public class UserService {
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
 
+
     public UserResponse createUser(CreateUserRequest request) {
         if(userRepository.findByEmail(request.getEmail()).isPresent()){
             throw new AppException(ErrorCode.EMAIL_EXISTS);
         }
         User user = userMapper.toUser(request);
-        user.setRoles(getRoles(List.of(PredefinedRole.USER.name())));
+
+
+        var userRole = new HashSet<Role>();
+        userRole.add(roleRepository.findById("USER")
+                .orElseThrow(()->new RuntimeException("Role USER not found")));
+
+        user.setRoles(userRole);
+
         if ((request.getPassword() != null)) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
@@ -59,5 +65,13 @@ public class UserService {
         }
         List<Role> roles = roleRepository.findAllById(requestedRoles);
         return new HashSet<>(roles);
+    }
+    @PostAuthorize("hasRole('ADMIN')")
+    public void deleteUserByEmail(String email) {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        user.getRoles().clear();
+        userRepository.save(user);
+        userRepository.deleteById(user.getId());
     }
 }

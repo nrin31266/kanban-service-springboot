@@ -1,10 +1,15 @@
 spring:
   application:
     name: kanban-service
-  data:
-    mongodb:
-      uri: mongodb://nrin31266:16092005@localhost:27017/identity-kanban?authSource=admin
-      authentication-database: admin
+  datasource:
+    url: jdbc:mysql://localhost:3306/identity-service-kanban
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: nrin31266
+    password: 16092005
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 
 jwt:
   signerKey: HDKdDVDEpABtpunTzN2QM2pbmVzDP5jht6WGykegNKgsKDVdDlbzFVmU1vDOVOHV

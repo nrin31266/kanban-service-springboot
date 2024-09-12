@@ -1,5 +1,6 @@
 package com.rin.kanban.dto.response;
 
+import com.rin.kanban.entity.Permission;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,5 +14,5 @@ import java.util.Set;
 public class RoleResponse {
     String name;
     String description;
-    Set<String> permissions;
+    Set<Permission> permissions;
 }

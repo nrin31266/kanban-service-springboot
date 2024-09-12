@@ -18,6 +18,20 @@ services:
       MONGO_INITDB_DATABASE: kanban
     networks:
       - kanban-network
-
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-kanban
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: identity-service-kanban
+      MYSQL_USER: nrin31266
+      MYSQL_PASSWORD: 16092005
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - kanban-network
 volumes:
   mongo_data:
+  mysql-data:

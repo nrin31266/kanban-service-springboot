@@ -172,7 +172,7 @@ public class AuthenticationService {
                 .subject(user.getId())
                 .issuer("rin.com")
                 .issueTime(new Date())
-                .expirationTime(new Date(Instant.now().plus(1, ChronoUnit.MINUTES).toEpochMilli()))
+                .expirationTime(new Date(Instant.now().plus(10, ChronoUnit.MINUTES).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();
@@ -195,7 +195,7 @@ public class AuthenticationService {
                 stringJoiner.add("ROLE_" + role.getName());
 
                 if (!CollectionUtils.isEmpty(role.getPermissions())) {
-                    role.getPermissions().forEach(stringJoiner::add);
+                    role.getPermissions().forEach(permission ->  stringJoiner.add(permission.getName()));
                 }
             });
         }

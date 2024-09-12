@@ -1,8 +1,6 @@
 package com.rin.kanban.repository;
 
 import com.rin.kanban.entity.InvalidatedToken;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-@Repository
-public interface InvalidatedTokenRepository extends MongoRepository<InvalidatedToken, String> {}
+public interface InvalidatedTokenRepository extends JpaRepository<InvalidatedToken, String> {}

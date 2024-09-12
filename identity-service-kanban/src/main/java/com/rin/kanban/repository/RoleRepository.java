@@ -1,9 +1,8 @@
 package com.rin.kanban.repository;
 
 import com.rin.kanban.entity.Role;
-import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-@Repository
-public interface RoleRepository extends MongoRepository<Role, String> {
+
+public interface RoleRepository extends JpaRepository<Role, String> {
 }
