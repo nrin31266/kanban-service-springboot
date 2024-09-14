@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.annotation.Order;
@@ -27,19 +26,22 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
 
-
 @Component
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class AuthenticationFilter implements GlobalFilter, Order {
+    // Service for token introspection (checking token validity)
     IdentityService identityService;
     ObjectMapper objectMapper;
+
+    // List of public endpoints that don't require authentication
     @NonFinal
     private String[] publicEndpoint = {
-            "/kanban/auth/.*",
-            "/kanban/users/create",
-            "/kanban/auth/outbound/google-login"
+            "/identity/auth/.*",  // Regex pattern matching
+            "/identity/users/create",  // Public user creation endpoint
+            "/identity/auth/outbound/google-login",
+            "/kanban/suppliers/create"
     };
 
     @Override
@@ -47,54 +49,78 @@ public class AuthenticationFilter implements GlobalFilter, Order {
         return null;
     }
 
+    private final ApiResponse apiUnauthenticatedResponse = ApiResponse.builder()
+            .code(500)
+            .message("Unauthenticated")
+            .build();
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         log.info("Authentication Filter...");
-        // Get token from authorization header
-        if (isPublicEndpoint(exchange.getRequest()))
-            return chain.filter(exchange);
 
+        // Skip authentication if the request is for a public endpoint
+        if (isPublicEndpoint(exchange.getRequest())){
+            log.info("Public Endpoint");
+            return chain.filter(exchange);// Continue the request without authentication
+        }
+        // Get the Authorization header from the request
         List<String> authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);
         log.info("Authorization header: {}", authHeader);
+
+        // If no Authorization header, return 401 Unauthorized
         if (CollectionUtils.isEmpty(authHeader))
-            return unauthenticated(exchange.getResponse());
+            return unauthenticated(exchange.getResponse(), apiUnauthenticatedResponse);
+
+        // Remove the "Bearer" prefix and extract the token
         String token = authHeader.getFirst().replace("Bearer", "");
         log.info("Authentication Token: {}", token);
-        // Verify token
-        // Delegate identity service
+
+        // Validate the token using the IdentityService
         return identityService.introspect(token).flatMap(introspectResponseApiResponse -> {
+            // If token is valid, continue the request
+            if (introspectResponseApiResponse.getCode() != 1000) {
+                return unauthenticated(exchange.getResponse(), apiUnauthenticatedResponse);
+            }
+
             if (introspectResponseApiResponse.getResult().isValid()) {
                 return chain.filter(exchange);
             } else {
-                return unauthenticated(exchange.getResponse());
+                // If token is invalid, return 401 Unauthorized
+                return unauthenticated(exchange.getResponse(), apiUnauthenticatedResponse);
             }
         }).onErrorResume(
-                throwable -> unauthenticated(exchange.getResponse()));
+                // Handle errors during token introspection
+                throwable -> unauthenticated(exchange.getResponse(), apiUnauthenticatedResponse
+                        ));
     }
 
-    private Mono<Void> unauthenticated(ServerHttpResponse response) {
-        ApiResponse<?> apiResponse = ApiResponse.builder()
-                .code(1401)
-                .message("Unauthenticated")
-                .build();
-
+    // Helper method to return a 401 Unauthorized response
+    private Mono<Void> unauthenticated(ServerHttpResponse response, ApiResponse<?> apiResponse) {
         String body = null;
         try {
+            // Convert ApiResponse to JSON format
             body = objectMapper.writeValueAsString(apiResponse);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e); // Handle JSON processing exception
         }
+
+        // Set the response status to 401 and content type to JSON
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
         response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
 
+        // Send the response body as a byte buffer
         return response.writeWith(Mono.just(response.bufferFactory().wrap(body.getBytes())));
     }
 
+
+    // Check if the request URI matches any public endpoint pattern
     private boolean isPublicEndpoint(ServerHttpRequest request) {
         log.info("Path: {}", request.getURI().getPath());
+        // Stream through publicEndpoint array to match request path
         return Arrays.stream(publicEndpoint).anyMatch(s -> request.getURI().getPath().matches(s));
     }
 
+    // Set the order of this filter, where -1 means it runs early in the filter chain
     @Override
     public int value() {
         return -1;

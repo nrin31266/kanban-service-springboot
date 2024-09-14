@@ -7,10 +7,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableJpaAuditing
-public class KanbanServiceApplication {
+public class KanbanIdentityServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(KanbanServiceApplication.class, args);
+		SpringApplication.run(KanbanIdentityServiceApplication.class, args);
 	}
 
 }

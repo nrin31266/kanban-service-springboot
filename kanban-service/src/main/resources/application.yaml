@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: kanban-service
+  data:
+    mongodb:
+      uri: mongodb://nrin31266:16092005@localhost:27017/kanban?authSource=admin
+      auto-index-creation: true
+
+server:
+  port: 3002
+  servlet:
+    context-path: /kanban

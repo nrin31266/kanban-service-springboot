@@ -17,7 +17,7 @@ jwt:
 server:
   port: 3001
   servlet:
-    context-path: /kanban
+    context-path: /identity
 
 firebase:
   config:

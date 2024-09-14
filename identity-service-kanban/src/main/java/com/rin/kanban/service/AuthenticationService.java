@@ -139,7 +139,7 @@ public class AuthenticationService {
         Instant now = Instant.now();
 
         Duration timeRemaining = Duration.between(now, expiryTime);
-        Duration fifteenMinutes = Duration.ofSeconds(30);
+        Duration fifteenMinutes = Duration.ofMinutes(15);
 
         if (timeRemaining.isNegative() || timeRemaining.compareTo(fifteenMinutes) <= 0) {
             String userId = signedJWT.getJWTClaimsSet().getSubject();
@@ -172,7 +172,7 @@ public class AuthenticationService {
                 .subject(user.getId())
                 .issuer("rin.com")
                 .issueTime(new Date())
-                .expirationTime(new Date(Instant.now().plus(10, ChronoUnit.MINUTES).toEpochMilli()))
+                .expirationTime(new Date(Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();

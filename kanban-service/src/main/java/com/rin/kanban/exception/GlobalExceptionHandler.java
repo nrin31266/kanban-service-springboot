@@ -1,7 +1,6 @@
 package com.rin.kanban.exception;
 
 import com.rin.kanban.dto.ApiResponse;
-
 import jakarta.validation.ConstraintViolation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
