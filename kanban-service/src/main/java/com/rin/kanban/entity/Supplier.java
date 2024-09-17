@@ -20,18 +20,20 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Suppliers {
+public class Supplier {
     @MongoId
     String id;
     String photoUrl;
+    String slug;
     String name;
     String product;
     @DBRef
     Set<Category> categories;
     BigDecimal price;
-    @Indexed(unique = true)
     String contact;
     boolean talking;
+    int onTheWay;
+    String email;
     @CreatedDate
     Instant createdAt;
     @LastModifiedDate

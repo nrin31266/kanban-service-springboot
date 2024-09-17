@@ -1,10 +1,10 @@
 package com.rin.kanban.repository;
 
-import com.rin.kanban.entity.Suppliers;
+import com.rin.kanban.entity.Supplier;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
 
-public interface SuppliersRepository extends MongoRepository<Suppliers, String> {
-    Optional<Suppliers> findByContact(String contact);
+public interface SuppliersRepository extends MongoRepository<Supplier, String> {
+    Optional<Supplier> findByContact(String contact);
 }

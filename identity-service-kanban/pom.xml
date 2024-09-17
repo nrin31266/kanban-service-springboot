@@ -11,8 +11,8 @@
 	<groupId>com.rin</groupId>
 	<artifactId>identity-service-kanban</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>kanban-service</name>
-	<description>kanban-service</description>
+	<name>identity-service-kanban</name>
+	<description>identity-service-kanban</description>
 	<url/>
 	<licenses>
 		<license/>

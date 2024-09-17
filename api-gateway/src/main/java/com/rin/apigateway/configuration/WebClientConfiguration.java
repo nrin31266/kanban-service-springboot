@@ -17,7 +17,7 @@ public class WebClientConfiguration {
     @Bean
     WebClient webClient(){
         return WebClient.builder()
-                .baseUrl("http://localhost:3001/kanban")
+                .baseUrl("http://localhost:3001/identity")
                 .build();
     }
     @Bean

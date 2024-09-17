@@ -17,6 +17,8 @@ import java.util.Objects;
 @Slf4j
 public class GlobalExceptionHandler {
     private static final String MIN_ATTRIBUTE = "min";
+
+
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse> handlingValidException(MethodArgumentNotValidException exception) {
         String enumKey = Objects.requireNonNull(exception.getFieldError()).getDefaultMessage();

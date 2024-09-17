@@ -9,6 +9,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.request.*;
 import com.rin.kanban.dto.response.AuthenticationResponse;
 import com.rin.kanban.dto.response.IntrospectResponse;
@@ -52,8 +53,6 @@ public class AuthenticationService {
     String SIGNER_KEY;
 
     public AuthenticationResponse outboundLogin(OutboundUserRequest request) {
-        log.info("outboundLogin");
-//        log.info("Id token : {}", request.getIdToken());
         try {
             // Xác thực ID token
             FirebaseToken decodedToken = firebaseAuth.verifyIdToken(request.getIdToken());
@@ -92,7 +91,7 @@ public class AuthenticationService {
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new AppException(ErrorCode.INCORRECT_LOGIN_INFORMATION);
         }
 
         String token = generateToken(user);
@@ -139,7 +138,7 @@ public class AuthenticationService {
         Instant now = Instant.now();
 
         Duration timeRemaining = Duration.between(now, expiryTime);
-        Duration fifteenMinutes = Duration.ofMinutes(15);
+        Duration fifteenMinutes = Duration.ofMinutes(59);
 
         if (timeRemaining.isNegative() || timeRemaining.compareTo(fifteenMinutes) <= 0) {
             String userId = signedJWT.getJWTClaimsSet().getSubject();
@@ -160,7 +159,6 @@ public class AuthenticationService {
                     .build();
         } else {
             return AuthenticationResponse.builder()
-                    .token(request.getToken())
                     .build();
         }
     }
@@ -214,7 +212,7 @@ public class AuthenticationService {
         var verified = signedJWT.verify(verifier);
 
         if (!verified) {
-            throw new AppException(ErrorCode.INVALID_KEY);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
         if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) {

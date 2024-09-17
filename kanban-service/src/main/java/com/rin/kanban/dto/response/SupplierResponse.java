@@ -1,6 +1,7 @@
 package com.rin.kanban.dto.response;
 
 import com.rin.kanban.entity.Category;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,9 +14,12 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SuppliersResponse {
+public class SupplierResponse {
     String id;
+    int onTheWay;
+    String email;
     String photoUrl;
+    String slug;
     String name;
     String product;
     Set<Category> categories;
