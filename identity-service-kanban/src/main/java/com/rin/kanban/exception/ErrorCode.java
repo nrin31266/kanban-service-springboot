@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatusCode;
 @Getter
 public enum ErrorCode {
     UNCATEGORIZED_EXCEPTION(9999, "An unexpected error occurred. Please try again later", HttpStatus.INTERNAL_SERVER_ERROR),
-    INVALID_KEY(1001, "The provided key is invalid or missing. Please check your request and try again", HttpStatus.BAD_REQUEST),
+    INVALID_KEY(1001, "The key is invalid", HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     INCORRECT_LOGIN_INFORMATION(10014, "Incorrect login information", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(1007, "You do not have permission to access this resource.", HttpStatus.FORBIDDEN),

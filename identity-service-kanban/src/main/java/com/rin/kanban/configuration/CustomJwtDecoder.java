@@ -13,7 +13,7 @@ import java.text.ParseException;
 @Component
 public class CustomJwtDecoder implements JwtDecoder {
     @Override
-    public Jwt decode(String token) throws JwtException {
+    public Jwt decode(String token){
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
             return new Jwt(
@@ -23,9 +23,8 @@ public class CustomJwtDecoder implements JwtDecoder {
                     signedJWT.getHeader().toJSONObject(),
                     signedJWT.getJWTClaimsSet().getClaims()
             );
-        } catch (ParseException e) {
+        } catch (ParseException | JwtException e) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-
     }
 }

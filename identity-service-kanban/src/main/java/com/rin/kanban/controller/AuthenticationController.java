@@ -7,6 +7,7 @@ import com.rin.kanban.dto.request.LoginRequest;
 import com.rin.kanban.dto.request.LogoutRequest;
 import com.rin.kanban.dto.request.RefreshRequest;
 import com.rin.kanban.dto.response.AuthenticationResponse;
+import com.rin.kanban.dto.response.RefreshTokenResponse;
 import com.rin.kanban.dto.response.IntrospectResponse;
 import com.rin.kanban.service.AuthenticationService;
 import lombok.AccessLevel;
@@ -34,11 +35,11 @@ public class AuthenticationController {
                 .build();
     }
     @PostMapping("/refresh")
-    public ApiResponse<AuthenticationResponse> authenticate(@RequestBody RefreshRequest request)
+    public ApiResponse<RefreshTokenResponse> authenticate(@RequestBody RefreshRequest request)
             throws ParseException, JOSEException {
         var result = authenticationService.refreshToken(request);
 
-        return ApiResponse.<AuthenticationResponse>builder().result(result).build();
+        return ApiResponse.<RefreshTokenResponse>builder().result(result).build();
     }
 
     @PostMapping("/introspect")

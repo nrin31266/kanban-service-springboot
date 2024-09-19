@@ -3,6 +3,7 @@ package com.rin.kanban.controller.outbound;
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.request.OutboundUserRequest;
 import com.rin.kanban.dto.response.AuthenticationResponse;
+import com.rin.kanban.dto.response.RefreshTokenResponse;
 import com.rin.kanban.service.AuthenticationService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

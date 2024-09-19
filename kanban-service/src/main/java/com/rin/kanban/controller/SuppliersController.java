@@ -1,6 +1,8 @@
 package com.rin.kanban.controller;
 
 import com.rin.kanban.dto.ApiResponse;
+import com.rin.kanban.dto.PageResponse;
+import com.rin.kanban.data.form.FormModel;
 import com.rin.kanban.dto.request.SupplierRequest;
 import com.rin.kanban.dto.response.SupplierResponse;
 import com.rin.kanban.service.SuppliersService;
@@ -10,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/suppliers")
@@ -29,9 +29,12 @@ public class SuppliersController {
     }
 
     @GetMapping
-    public ApiResponse<List<SupplierResponse>> getAll() {
-        return ApiResponse.<List<SupplierResponse>>builder()
-                .result(suppliersService.getAll())
+    public ApiResponse<PageResponse<SupplierResponse>> getAll(
+            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "5") int size
+    ) {
+        return ApiResponse.<PageResponse<SupplierResponse>>builder()
+                .result(suppliersService.getAll(page, size))
                 .build();
     }
     @PutMapping("/{suppliersId}")
@@ -45,10 +48,18 @@ public class SuppliersController {
     }
     @DeleteMapping
     public ApiResponse delete(@Param String suppliersId) {
+        boolean isDelete = suppliersService.removeSupplier(suppliersId);
         return ApiResponse.builder()
-                .message((suppliersService.removeSupplier(suppliersId))?
-                        "Successfully deleted supplier successfully!":
+                .result(isDelete)
+                .message(isDelete?
+                        "Deleted supplier successfully!":
                         "Cannot deleted supplier")
+                .build();
+    }
+    @GetMapping("/form")
+    public ApiResponse<FormModel> form() {
+        return ApiResponse.<FormModel>builder()
+                .result(suppliersService.getForm())
                 .build();
     }
 

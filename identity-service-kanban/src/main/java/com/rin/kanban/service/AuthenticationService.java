@@ -9,9 +9,9 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.request.*;
 import com.rin.kanban.dto.response.AuthenticationResponse;
+import com.rin.kanban.dto.response.RefreshTokenResponse;
 import com.rin.kanban.dto.response.IntrospectResponse;
 import com.rin.kanban.entity.InvalidatedToken;
 import com.rin.kanban.entity.User;
@@ -100,69 +100,130 @@ public class AuthenticationService {
                 .build();
     }
 
-    public void logout(LogoutRequest request) throws ParseException, JOSEException {
+    public void logout(LogoutRequest request) {
+        String token = request.getToken();
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            if (isTokenValid(signedJWT)) {
+                String jwtId = signedJWT.getJWTClaimsSet().getJWTID();
+                Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
-        var signToken = verifyToken(request.getToken());
-
-        String jit = signToken.getJWTClaimsSet().getJWTID();
-
-        Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
-
-        InvalidatedToken invalidatedToken =
-                InvalidatedToken.builder()
-                        .id(jit)
+                InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                        .id(jwtId)
                         .expiryTime(expiryTime)
                         .build();
 
-        invalidatedTokenRepository.save(invalidatedToken);
+                invalidatedTokenRepository.save(invalidatedToken);
+            } else {
+                log.warn("Attempted to logout with an invalid or expired token.");
+            }
+        } catch (ParseException e) {
+            log.error("Logout failed due to an error", e);
+        }
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) {
-        var token = request.getToken();
-        boolean isValid = true;
-        try {
-            tokenIsExpired(verifyToken(token));
-        } catch (JOSEException | ParseException e) {
-            isValid = false;
-            log.info("Invalid token");
+        boolean isValid = false;
+        String token = request.getToken();
+        if(token != null){
+            try {
+                SignedJWT signedJWT = SignedJWT.parse(token);
+                isValid = isTokenValid(signedJWT);
+                if (isValid && isTokenExpired(signedJWT)) {
+                    isValid = false;
+                }
+            } catch (ParseException e) {
+                log.error("Introspection failed due to an error");
+                isValid = false;
+            }
         }
-        return IntrospectResponse.builder().
-                valid(isValid)
+        return IntrospectResponse.builder()
+                .valid(isValid)
                 .build();
     }
 
-    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
-        var signedJWT = verifyToken(request.getToken());
+    // Method to refresh token
+    public RefreshTokenResponse refreshToken(RefreshRequest request){
+        String token = request.getToken();
+        RefreshTokenResponse res = RefreshTokenResponse.builder()
+                .build();
+        if(token == null){res.setTokenValid(false); return res;}
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            boolean isTokenValid = isTokenValid(signedJWT);
+            if (!isTokenValid) {
+                return res;
+            }
+            Instant expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime().toInstant();
+            Instant now = Instant.now();
 
-        Instant expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime().toInstant();
-        Instant now = Instant.now();
+            Duration timeRemaining = Duration.between(now, expiryTime);
+            Duration fifteenMinutes = Duration.ofSeconds(5);
 
-        Duration timeRemaining = Duration.between(now, expiryTime);
-        Duration fifteenMinutes = Duration.ofMinutes(59);
+            if (timeRemaining.isNegative() || timeRemaining.compareTo(fifteenMinutes) <= 0) {
+                String userId = signedJWT.getJWTClaimsSet().getSubject();
+                Optional<User> user = userRepository.findById(userId);
+                if (user.isEmpty()) {
+                    log.info("{} not found", userId);
+                    res.setTokenValid(false);
+                    return res;
+                }
+                String newToken = generateToken(user.get());
 
-        if (timeRemaining.isNegative() || timeRemaining.compareTo(fifteenMinutes) <= 0) {
-            String userId = signedJWT.getJWTClaimsSet().getSubject();
-            var user = userRepository.findById(userId)
-                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+                String jwtId = signedJWT.getJWTClaimsSet().getJWTID();
+                InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                        .id(jwtId)
+                        .expiryTime(Date.from(expiryTime))
+                        .build();
+                invalidatedTokenRepository.save(invalidatedToken);
 
-            var newToken = generateToken(user);
+                res.setToken(newToken);
+            }
+            res.setTokenValid(true);
+            return res;
+        } catch (ParseException e) {
+            log.error("?: ", e);
+            res.setTokenValid(false);
+            return res;
+        }
+    }
+    private boolean isTokenValid(SignedJWT signedJWT) {
+        try {
+            JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+            boolean verified = signedJWT.verify(verifier);
 
-            String jit = signedJWT.getJWTClaimsSet().getJWTID();
-            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                    .id(jit)
-                    .expiryTime(java.sql.Date.from(expiryTime))
-                    .build();
-            invalidatedTokenRepository.save(invalidatedToken);
-
-            return AuthenticationResponse.builder()
-                    .token(newToken)
-                    .build();
-        } else {
-            return AuthenticationResponse.builder()
-                    .build();
+            if (!verified || invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) {
+                log.info("Invalid token");
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Token verification failed", e);
+            return false;
         }
     }
 
+
+
+    private boolean isTokenExpired(SignedJWT signedJWT) throws ParseException {
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        return expiryTime.before(new Date());
+    }
+
+
+
+    private void validateTokenIssuedAt(FirebaseToken decodedToken, String uid) throws AppException {
+        try {
+            UserRecord user = FirebaseAuth.getInstance().getUser(uid);
+            long validSince = user.getTokensValidAfterTimestamp() / 1000;
+            long issuedAt = (long) decodedToken.getClaims().get("iat");
+            if (issuedAt < validSince) {
+                throw new AppException(ErrorCode.TOKEN_EXPIRED);
+            }
+        } catch (FirebaseException e) {
+            throw new AppException(ErrorCode.INVALID_KEY);
+        }
+    }
 
     private String generateToken(User user) {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
@@ -187,58 +248,14 @@ public class AuthenticationService {
 
     private String buildScope(User user) {
         StringJoiner stringJoiner = new StringJoiner(" ");
-
         if (!CollectionUtils.isEmpty(user.getRoles())) {
             user.getRoles().forEach(role -> {
                 stringJoiner.add("ROLE_" + role.getName());
-
                 if (!CollectionUtils.isEmpty(role.getPermissions())) {
                     role.getPermissions().forEach(permission ->  stringJoiner.add(permission.getName()));
                 }
             });
         }
-
         return stringJoiner.toString();
-    }
-
-
-
-    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
-        log.info("Verifying token");
-        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
-
-        SignedJWT signedJWT = SignedJWT.parse(token);
-
-        var verified = signedJWT.verify(verifier);
-
-        if (!verified) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-
-        if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-        return signedJWT;
-    }
-
-    private void tokenIsExpired(SignedJWT signedJWT) throws ParseException {
-        Date expiredTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        if (expiredTime.before(new Date())) {
-            throw new AppException(ErrorCode.TOKEN_EXPIRED);
-        }
-    }
-
-
-    private void validateTokenIssuedAt(FirebaseToken decodedToken, String uid) throws AppException {
-        try {
-            UserRecord user = FirebaseAuth.getInstance().getUser(uid);
-            long validSince = user.getTokensValidAfterTimestamp() / 1000;
-            long issuedAt = (long) decodedToken.getClaims().get("iat");
-            if (issuedAt < validSince) {
-                throw new AppException(ErrorCode.TOKEN_EXPIRED);
-            }
-        } catch (FirebaseException e) {
-            throw new AppException(ErrorCode.INVALID_KEY);
-        }
     }
 }
