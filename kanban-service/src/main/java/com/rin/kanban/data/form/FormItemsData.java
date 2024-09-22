@@ -15,6 +15,7 @@ public class FormItemsData {
                     .type("default")
                     .required(true)
                     .message("Enter Supplier name")
+                    .displayLength(220)
                     .build(),
             FormItem.builder()
                     .key("product")
@@ -24,6 +25,7 @@ public class FormItemsData {
                     .type("default")
                     .required(true)
                     .message("Enter product name")
+                    .displayLength(150)
                     .build(),
             FormItem.builder()
                     .key("categories")
@@ -33,6 +35,7 @@ public class FormItemsData {
                     .type("select")
                     .required(false)
                     .message("Select product category")
+                    .displayLength(150)
                     .build(),
             FormItem.builder()
                     .key("price")
@@ -43,6 +46,7 @@ public class FormItemsData {
                     .required(false)
                     .message("Enter buying price")
                     .defaultValue("0")
+                    .displayLength(150)
                     .build(),
             FormItem.builder()
                     .key("contact")
@@ -52,6 +56,7 @@ public class FormItemsData {
                     .type("tel")
                     .required(false)
                     .message("Enter contact number!")
+                    .displayLength(150)
                     .build(),
             FormItem.builder()
                     .key("email")
@@ -61,6 +66,7 @@ public class FormItemsData {
                     .type("email")
                     .required(true)
                     .message("Enter email!")
+                    .displayLength(200)
                     .build(),
             FormItem.builder()
                     .key("onTheWay")
@@ -70,12 +76,14 @@ public class FormItemsData {
                     .type("number")
                     .required(false)
                     .message("")
+                    .displayLength(120)
                     .build(),
             FormItem.builder()
                     .key("talking")
                     .value("talking")
                     .label("Talking")
                     .type("check-box")
+                    .displayLength(70)
                     .message("")
                     .build()
     );

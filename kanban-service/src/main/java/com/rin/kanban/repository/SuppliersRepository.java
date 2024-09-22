@@ -3,8 +3,9 @@ package com.rin.kanban.repository;
 import com.rin.kanban.entity.Supplier;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import java.util.Optional;
+import java.time.Instant;
+import java.util.List;
 
 public interface SuppliersRepository extends MongoRepository<Supplier, String> {
-    Optional<Supplier> findByContact(String contact);
+
 }

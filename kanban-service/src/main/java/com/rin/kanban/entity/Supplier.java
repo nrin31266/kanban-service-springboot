@@ -31,8 +31,8 @@ public class Supplier {
     Set<Category> categories;
     BigDecimal price;
     String contact;
-    boolean talking;
-    int onTheWay;
+    Boolean talking;
+    Integer onTheWay;
     String email;
     @CreatedDate
     Instant createdAt;

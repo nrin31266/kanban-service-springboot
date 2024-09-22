@@ -1,5 +1,6 @@
 package com.rin.kanban.data.form;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -8,14 +9,16 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FormItem {
     String key;
     String value;
     String label;
     String placeholder;
     String type;
-    boolean required;
+    Boolean required;
     String message;
     String defaultValue;
-    boolean checked;
+    Boolean checked;
+    Integer displayLength;
 }
