@@ -45,8 +45,6 @@ public class SuppliersController {
         return ApiResponse.<List<ExportSupplierDataResponse>>builder()
                 .result(suppliersService.exportSuppliersData(start, end, request))
                 .build();
-
-
     }
 
     @GetMapping

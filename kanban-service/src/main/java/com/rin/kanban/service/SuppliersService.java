@@ -1,6 +1,6 @@
 package com.rin.kanban.service;
 
-import com.rin.kanban.data.form.FormItemsData;
+import com.rin.kanban.data.form.SupplierFormItems;
 import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.data.form.FormModel;
 import com.rin.kanban.dto.request.ExportDataRequest;
@@ -25,7 +25,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -66,7 +65,7 @@ public class SuppliersService {
     }
 
     public FormModel getForm() {
-        FormItemsData itemsData = new FormItemsData();
+        SupplierFormItems itemsData = new SupplierFormItems();
         return FormModel.builder()
                 .title("Suppliers")
                 .layout("horizontal")

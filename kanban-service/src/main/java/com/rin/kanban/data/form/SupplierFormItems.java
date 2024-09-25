@@ -5,26 +5,26 @@ import lombok.Getter;
 import java.util.Arrays;
 import java.util.List;
 @Getter
-public class FormItemsData {
+public class SupplierFormItems {
     private final List<FormItem> getFormItems = Arrays.asList(
             FormItem.builder()
                     .key("name")
                     .value("name")
-                    .label("Supplier name")
-                    .placeholder("Enter Supplier")
+                    .label("Supplier Name")
+                    .placeholder("Enter supplier")
                     .type("default")
                     .required(true)
-                    .message("Enter Supplier name")
+                    .message("Enter supplier name")
                     .displayLength(220)
                     .build(),
             FormItem.builder()
                     .key("product")
                     .value("product")
-                    .label("Product name")
+                    .label("Product Name")
                     .placeholder("Enter product")
                     .type("default")
                     .required(true)
-                    .message("Enter product name")
+                    .message("Enter product Name")
                     .displayLength(150)
                     .build(),
             FormItem.builder()
@@ -71,7 +71,7 @@ public class FormItemsData {
             FormItem.builder()
                     .key("onTheWay")
                     .value("onTheWay")
-                    .label("On the way")
+                    .label("On The Way")
                     .placeholder("")
                     .type("number")
                     .required(false)
