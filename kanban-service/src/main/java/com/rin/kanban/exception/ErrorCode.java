@@ -15,6 +15,7 @@ public enum ErrorCode {
     SUPPLIERS_NOT_FOUND(10016, "Supplier not found", HttpStatus.NOT_FOUND),
     INVALID_EMAIL(10017, "Invalid email address", HttpStatus.BAD_REQUEST),
     CATEGORY_EXISTED(10018, "Category existed", HttpStatus.CONFLICT),
+    CATEGORY_NOT_FOUND(10019, "Category not found", HttpStatus.NOT_FOUND),
     ;
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;
