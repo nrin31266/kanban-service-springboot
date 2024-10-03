@@ -7,10 +7,9 @@ import com.rin.kanban.service.ProductService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/products")
@@ -23,6 +22,31 @@ public class ProductController {
     public ApiResponse<ProductResponse> createProduct(@RequestBody ProductRequest productRequest) {
         return ApiResponse.<ProductResponse>builder()
                 .result(productService.createProduct(productRequest))
+                .build();
+    }
+    @GetMapping("/data")
+    public ApiResponse<List<ProductResponse>> getAllProducts() {
+        return  ApiResponse.<List<ProductResponse>>builder()
+                .result(productService.getProducts())
+                .build();
+    }
+    @GetMapping("/data/{productId}")
+    public ApiResponse<ProductResponse> getProductById(@PathVariable("productId") String productId) {
+        return ApiResponse.<ProductResponse>builder()
+                .result(productService.getProduct(productId))
+                .build();
+    }
+    @DeleteMapping("/{productId}")
+    public ApiResponse deleteProductById(@PathVariable("productId") String productId) {
+        Boolean isDeleted = productService.deleteProduct(productId);
+        return ApiResponse.builder()
+                .message(isDeleted? "Deleted" : "Can't be deleted")
+                .build();
+    }
+    @PutMapping("/{productId}")
+    public ApiResponse<ProductResponse> updateProduct(@PathVariable("productId") String productId ,@RequestBody ProductRequest productRequest) {
+        return ApiResponse.<ProductResponse>builder()
+                .result(productService.updateProduct(productId, productRequest))
                 .build();
     }
 }

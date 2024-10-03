@@ -5,10 +5,13 @@ import com.rin.kanban.dto.response.ProductResponse;
 import com.rin.kanban.entity.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
     @Mapping(target = "categories", ignore = true)
     Product toProduct(ProductRequest request);
     ProductResponse toProductResponse(Product product);
+    @Mapping(target = "categories", ignore = true)
+    void updateProduct(@MappingTarget Product product, ProductRequest request);
 }

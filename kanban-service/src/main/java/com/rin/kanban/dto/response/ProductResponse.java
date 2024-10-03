@@ -25,6 +25,7 @@ public class ProductResponse {
     String supplierId;
     String content;
     Instant expiredDate;
+    Set<String> images;
     Set<Category> categories;
     Instant createdAt;
     Instant updatedAt;

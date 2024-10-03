@@ -27,6 +27,7 @@ public class Product {
     String supplierId;
     String content;
     Instant expiredDate = null;
+    String[] images;
     @DBRef
     Set<Category> categories;
     @CreatedDate

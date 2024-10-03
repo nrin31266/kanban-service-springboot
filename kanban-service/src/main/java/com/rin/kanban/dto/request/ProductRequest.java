@@ -24,5 +24,6 @@ public class ProductRequest {
     String supplierId;
     String content;
     Instant expiredDate;
+    Set<String> images;
     Set<String> categories;
 }

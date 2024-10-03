@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,35 @@ public class ProductService {
             categories.add(categoryRepository.findById(categoryId).orElseThrow(()->new AppException(ErrorCode.CATEGORY_NOT_FOUND)));
         }));
         product.setCategories(categories);
+        return productMapper.toProductResponse(productRepository.save(product));
+    }
+
+    public Boolean deleteProduct(String productId) {
+        try {
+            productRepository.deleteById(productId);
+            return true;
+        }catch (Exception e) {
+            return false;
+        }
+    }
+    public ProductResponse getProduct(String productId) {
+        return productMapper.toProductResponse(productRepository.findById(productId).orElseThrow());
+    }
+    public List<ProductResponse> getProducts() {
+        return productRepository.findAll().stream().map(productMapper::toProductResponse).toList();
+    }
+    public ProductResponse updateProduct(String productId, ProductRequest productRequest) {
+        Product product = productRepository.findById(productId).orElseThrow(() ->new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        productMapper.updateProduct(product, productRequest);
+
+        if(productRequest.getCategories() != null) {
+            HashSet<Category> categories = new HashSet<>();
+            productRequest.getCategories().forEach((categoryId->{
+                Category category = categoryRepository.findById(categoryId).orElseThrow(()->new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                categories.add(category);
+            }));
+            product.setCategories(categories);
+        }
         return productMapper.toProductResponse(productRepository.save(product));
     }
 }
