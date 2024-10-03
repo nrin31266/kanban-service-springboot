@@ -1,5 +1,6 @@
-package com.rin.kanban.entity;
+package com.rin.kanban.dto.request;
 
+import com.rin.kanban.entity.Category;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
@@ -8,30 +9,20 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Set;
 
 @Data
-@Document("products")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Product {
-    @MongoId
-    String id;
+public class ProductRequest {
     String title;
     String description;
     String slug;
     String supplierId;
     String content;
-    Instant expiredDate = null;
-    @DBRef
-    Set<Category> categories;
-    @CreatedDate
-    Instant createdAt;
-    @LastModifiedDate
-    Instant updatedAt;
-
+    Instant expiredDate;
+    Set<String> categories;
 }

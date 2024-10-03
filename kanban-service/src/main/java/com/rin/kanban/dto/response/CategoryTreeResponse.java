@@ -1,5 +1,6 @@
 package com.rin.kanban.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -10,7 +11,10 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CategoriesResponse {
-    List<CategoryResponse> categoriesParent;
-    List<CategoryResponse> categoriesChildren;
+
+public class CategoryTreeResponse {
+    String value;
+    String title;
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    List<CategoryTreeResponse> children;
 }

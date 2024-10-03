@@ -3,8 +3,9 @@ package com.rin.kanban.controller;
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.CategoryRequest;
-import com.rin.kanban.dto.response.CategoriesResponse;
 import com.rin.kanban.dto.response.CategoryResponse;
+import com.rin.kanban.dto.response.CategoryTableResponse;
+import com.rin.kanban.dto.response.CategoryTreeResponse;
 import com.rin.kanban.service.CategoryService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +28,19 @@ public class CategoryController {
                 .build();
     }
 
-    @GetMapping("/get")
-    public ApiResponse<CategoriesResponse> getCategories() {
-        return ApiResponse.<CategoriesResponse>builder()
-                .result(categoryService.getCategories())
+    @GetMapping("/get-tree")
+    public ApiResponse<List<CategoryTreeResponse>> getCategories() {
+        return ApiResponse.<List<CategoryTreeResponse>>builder()
+                .result(categoryService.getAllCategoriesTree())
                 .build();
     }
+    @GetMapping("/table-data")
+    public ApiResponse<List<CategoryTableResponse>> getCategoriesTableData() {
+        return ApiResponse.<List<CategoryTableResponse>>builder()
+                .result(categoryService.getCategoriesTableData())
+                .build();
+    }
+
 
     @GetMapping
     public ApiResponse<PageResponse<CategoryResponse>> getAllCategories(
