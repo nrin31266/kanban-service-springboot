@@ -1,6 +1,8 @@
 package com.rin.kanban.service;
 
+import com.google.api.client.auth.oauth2.BearerToken;
 import com.rin.kanban.dto.request.CreateUserRequest;
+import com.rin.kanban.dto.response.UserInfoResponse;
 import com.rin.kanban.dto.response.UserResponse;
 import com.rin.kanban.entity.Permission;
 import com.rin.kanban.entity.Role;
@@ -15,9 +17,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ServerWebExchange;
 
+import java.security.Security;
 import java.util.HashSet;
 import java.util.List;
 
@@ -50,6 +56,14 @@ public class UserService {
         }
         return userMapper.toUserResponse(userRepository.save(user));
     }
+    public UserInfoResponse getInfo(){
+        var context = SecurityContextHolder.getContext();
+        var userId = context.getAuthentication().getName();
+        User user = userRepository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
+
+        return userMapper.toUserInfoResponse(user);
+
+    };
     @PostAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getAll() {
         return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();

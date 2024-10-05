@@ -2,6 +2,7 @@ package com.rin.kanban.controller;
 
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.request.CreateUserRequest;
+import com.rin.kanban.dto.response.UserInfoResponse;
 import com.rin.kanban.dto.response.UserResponse;
 import com.rin.kanban.service.UserService;
 import lombok.AccessLevel;
@@ -43,6 +44,12 @@ public class UserController {
         userService.deleteUserByEmail(email);
         return ApiResponse.builder()
                 .message("Successfully delete a user with email: " + email)
+                .build();
+    }
+    @GetMapping("/info")
+    ApiResponse<UserInfoResponse> getUserInfo() {
+        return ApiResponse.<UserInfoResponse>builder()
+                .result(userService.getInfo())
                 .build();
     }
 

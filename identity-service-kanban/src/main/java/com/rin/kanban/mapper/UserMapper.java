@@ -1,6 +1,7 @@
 package com.rin.kanban.mapper;
 
 import com.rin.kanban.dto.request.CreateUserRequest;
+import com.rin.kanban.dto.response.UserInfoResponse;
 import com.rin.kanban.dto.response.UserResponse;
 import com.rin.kanban.entity.User;
 import org.mapstruct.Mapper;
@@ -14,4 +15,6 @@ public interface UserMapper {
     User toUser(UserResponse request);
 
     UserResponse toUserResponse(User user);
+
+    UserInfoResponse toUserInfoResponse(User user);
 }
