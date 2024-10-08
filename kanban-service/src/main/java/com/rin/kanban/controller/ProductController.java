@@ -2,6 +2,7 @@ package com.rin.kanban.controller;
 
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.request.ProductRequest;
+import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
 import com.rin.kanban.dto.response.ProductResponse;
 import com.rin.kanban.service.ProductService;
 import lombok.AccessLevel;
@@ -25,8 +26,8 @@ public class ProductController {
                 .build();
     }
     @GetMapping("/data")
-    public ApiResponse<List<ProductResponse>> getAllProducts() {
-        return  ApiResponse.<List<ProductResponse>>builder()
+    public ApiResponse<List<ProductHasSubProductsResponse>> getAllProducts() {
+        return  ApiResponse.<List<ProductHasSubProductsResponse>>builder()
                 .result(productService.getProducts())
                 .build();
     }
