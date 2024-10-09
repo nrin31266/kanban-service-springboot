@@ -41,6 +41,7 @@ public class ProductController {
     public ApiResponse deleteProductById(@PathVariable("productId") String productId) {
         Boolean isDeleted = productService.deleteProduct(productId);
         return ApiResponse.builder()
+                .result(isDeleted)
                 .message(isDeleted? "Deleted" : "Can't be deleted")
                 .build();
     }

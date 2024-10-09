@@ -44,7 +44,9 @@ public class ProductService {
     }
 
     public Boolean deleteProduct(String productId) {
+    productRepository.findById(productId).orElseThrow(()->new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         try {
+            subProductRepository.deleteAllByProductId(productId);
             productRepository.deleteById(productId);
             return true;
         }catch (Exception e) {
