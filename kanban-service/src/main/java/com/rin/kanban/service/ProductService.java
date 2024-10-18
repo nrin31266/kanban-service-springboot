@@ -33,49 +33,52 @@ public class ProductService {
     CategoryRepository categoryRepository;
     SubProductRepository subProductRepository;
     SubProductMapper subProductMapper;
+
     public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = productMapper.toProduct(productRequest);
         HashSet<Category> categories = new HashSet<>();
-        productRequest.getCategories().forEach((categoryId->{
-            categories.add(categoryRepository.findById(categoryId).orElseThrow(()->new AppException(ErrorCode.CATEGORY_NOT_FOUND)));
+        productRequest.getCategories().forEach((categoryId -> {
+            categories.add(categoryRepository.findById(categoryId).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND)));
         }));
         product.setCategories(categories);
         return productMapper.toProductResponse(productRepository.save(product));
     }
 
     public Boolean deleteProduct(String productId) {
-    productRepository.findById(productId).orElseThrow(()->new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         try {
             subProductRepository.deleteAllByProductId(productId);
             productRepository.deleteById(productId);
             return true;
-        }catch (Exception e) {
+        } catch (Exception e) {
             return false;
         }
     }
+
     public ProductResponse getProduct(String productId) {
-        return productMapper.toProductResponse(productRepository.findById(productId).orElseThrow());
+        return productMapper.toProductResponse(productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND)));
     }
+
     public List<ProductHasSubProductsResponse> getProducts() {
         List<Product> products = productRepository.findAll();
-        List<ProductHasSubProductsResponse> responses = products.parallelStream().map(product -> {
+        return products.parallelStream().map(product -> {
             ProductHasSubProductsResponse response = productMapper.toProductHasSubProductsResponse(product);
             List<SubProduct> subProducts = subProductRepository.findByProductId(product.getId());
 
-            if(!subProducts.isEmpty())
+            if (!subProducts.isEmpty())
                 response.setSubProductResponse(subProducts.stream().map(subProductMapper::toSubProductResponse).toList());
             return response;
         }).collect(Collectors.toList());
-        return responses;
     }
+
     public ProductResponse updateProduct(String productId, ProductRequest productRequest) {
-        Product product = productRepository.findById(productId).orElseThrow(() ->new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         productMapper.updateProduct(product, productRequest);
 
-        if(productRequest.getCategories() != null) {
+        if (productRequest.getCategories() != null) {
             HashSet<Category> categories = new HashSet<>();
-            productRequest.getCategories().forEach((categoryId->{
-                Category category = categoryRepository.findById(categoryId).orElseThrow(()->new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+            productRequest.getCategories().forEach((categoryId -> {
+                Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
                 categories.add(category);
             }));
             product.setCategories(categories);

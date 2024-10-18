@@ -31,7 +31,7 @@ public class ProductController {
                 .result(productService.getProducts())
                 .build();
     }
-    @GetMapping("/data/{productId}")
+    @GetMapping("/{productId}")
     public ApiResponse<ProductResponse> getProductById(@PathVariable("productId") String productId) {
         return ApiResponse.<ProductResponse>builder()
                 .result(productService.getProduct(productId))
