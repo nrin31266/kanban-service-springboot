@@ -1,8 +1,10 @@
 package com.rin.kanban.service;
 
+import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.ProductRequest;
 import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
 import com.rin.kanban.dto.response.ProductResponse;
+import com.rin.kanban.dto.response.SubProductResponse;
 import com.rin.kanban.entity.Category;
 import com.rin.kanban.entity.Product;
 import com.rin.kanban.entity.SubProduct;
@@ -17,6 +19,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -69,6 +75,30 @@ public class ProductService {
                 response.setSubProductResponse(subProducts.stream().map(subProductMapper::toSubProductResponse).toList());
             return response;
         }).collect(Collectors.toList());
+    }
+
+    public PageResponse<ProductHasSubProductsResponse> getProductsWithPageAndSize(int page, int size) {
+        Sort sort = Sort.by("updatedAt").descending();
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<Product> pageData = productRepository.findAll(pageable);
+
+        List<ProductHasSubProductsResponse> response = pageData.getContent().stream().map((product) -> {
+            List<SubProduct> subProducts = subProductRepository.findByProductId(product.getId());
+            ProductHasSubProductsResponse productHasSubProductsResponse = productMapper.toProductHasSubProductsResponse(product);
+            if (!subProducts.isEmpty()) {
+                List<SubProductResponse> subProductResponses = subProducts.stream().map(subProductMapper::toSubProductResponse).toList();
+                productHasSubProductsResponse.setSubProductResponse(subProductResponses);
+            }
+            return productHasSubProductsResponse;
+        }).toList();
+
+        return PageResponse.<ProductHasSubProductsResponse>builder()
+                .pageSize(pageData.getSize())
+                .currentPage(pageData.getNumber()+1)
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .data(response)
+                .build();
     }
 
     public ProductResponse updateProduct(String productId, ProductRequest productRequest) {

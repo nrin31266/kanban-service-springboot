@@ -6,10 +6,13 @@ import com.rin.kanban.dto.response.CategoryResponse;
 import com.rin.kanban.dto.response.CategoryTableResponse;
 import com.rin.kanban.dto.response.CategoryTreeResponse;
 import com.rin.kanban.entity.Category;
+import com.rin.kanban.entity.Product;
 import com.rin.kanban.exception.AppException;
 import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.CategoryMapper;
+import com.rin.kanban.mapper.ProductMapper;
 import com.rin.kanban.repository.CategoryRepository;
+import com.rin.kanban.repository.ProductRepository;
 import lombok.AccessLevel;
 
 import lombok.RequiredArgsConstructor;
@@ -30,6 +33,8 @@ import java.util.*;
 public class CategoryService {
     CategoryRepository categoryRepository;
     CategoryMapper categoryMapper;
+    ProductRepository productRepository;
+    ProductMapper productMapper;
 
     public CategoryResponse addCategory(CategoryRequest request) {
         if (categoryRepository.findByParentIdAndSlug(request.getParentId(), request.getSlug()).isPresent()) {
@@ -112,16 +117,33 @@ public class CategoryService {
 
     public Boolean deleteCategory(String categoryId) {
         try {
-            Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+            // Tìm category theo ID hoặc ném lỗi nếu không tìm thấy
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+
+            // Xóa danh mục và cập nhật danh mục con (nếu có)
             categoryRepository.deleteById(categoryId);
+
+            // Tìm tất cả các danh mục con của danh mục vừa xóa
             List<Category> categoriesChildren = categoryRepository.findAllByParentId(categoryId);
-            categoriesChildren.forEach((item) -> item.setParentId(category.getParentId() != null ? category.getParentId() : null));
+
+            // Cập nhật parentId của các danh mục con
+            categoriesChildren.forEach(item -> item.setParentId(category.getParentId() != null ? category.getParentId() : null));
+
+            // Lưu lại các danh mục con đã cập nhật
             categoryRepository.saveAll(categoriesChildren);
+
             return true;
+        } catch (AppException e) {
+            // Xử lý lỗi nghiệp vụ
+            throw e;
         } catch (Exception e) {
+            // Xử lý các lỗi không mong muốn
+            e.printStackTrace();  // Log lỗi để dễ dàng debug hơn
             return false;
         }
     }
+
 
 
     public CategoryResponse updateCategory(CategoryRequest request, String categoryId) {

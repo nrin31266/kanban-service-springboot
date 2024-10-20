@@ -1,6 +1,7 @@
 package com.rin.kanban.controller;
 
 import com.rin.kanban.dto.ApiResponse;
+import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.ProductRequest;
 import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
 import com.rin.kanban.dto.response.ProductResponse;
@@ -26,9 +27,21 @@ public class ProductController {
                 .build();
     }
     @GetMapping("/data")
-    public ApiResponse<List<ProductHasSubProductsResponse>> getAllProducts() {
-        return  ApiResponse.<List<ProductHasSubProductsResponse>>builder()
-                .result(productService.getProducts())
+    public ApiResponse<PageResponse<ProductHasSubProductsResponse>> getAllProducts(@RequestParam Integer page, @RequestParam Integer size) {
+        if (page != null && size != null) {
+            return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
+                    .result(productService.getProductsWithPageAndSize(page, size))
+                    .build();
+        }
+        List<ProductHasSubProductsResponse> productHasSubProductsResponses = productService.getProducts();
+        return  ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
+                .result(PageResponse.<ProductHasSubProductsResponse>builder()
+                        .totalElements(productHasSubProductsResponses.size())
+                        .totalPages(1)
+                        .currentPage(1)
+                        .pageSize(1)
+                        .data(productHasSubProductsResponses)
+                        .build())
                 .build();
     }
     @GetMapping("/{productId}")
