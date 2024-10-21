@@ -72,6 +72,7 @@ public class ProductService {
         List<Product> products = productRepository.findAllByIsDeletedIsNullOrIsDeletedIsFalse();
         return products.parallelStream().map(product -> {
             ProductHasSubProductsResponse response = productMapper.toProductHasSubProductsResponse(product);
+            log.info(response.toString());
             List<SubProduct> subProducts = subProductRepository.findByProductId(product.getId());
 
             if (!subProducts.isEmpty())
@@ -85,6 +86,17 @@ public class ProductService {
         Pageable pageable = PageRequest.of(page - 1, size, sort);
         Page<Product> pageData = productRepository.findAllByIsDeletedIsNullOrIsDeletedIsFalse(pageable);
 
+        return getSubProductsByPage(pageData);
+    }
+    public PageResponse<ProductHasSubProductsResponse> getProductsWithPageAndSizeAndTitle(int page, int size, String title) {
+        log.info(title);
+        Sort sort = Sort.by("updatedAt").descending();
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<Product> pageData = productRepository.findAllBySlugContaining(title, pageable);
+
+        return getSubProductsByPage(pageData);
+    }
+    private PageResponse<ProductHasSubProductsResponse> getSubProductsByPage (Page<Product> pageData){
         List<ProductHasSubProductsResponse> response = pageData.getContent().stream().map((product) -> {
             List<SubProduct> subProducts = subProductRepository.findByProductId(product.getId());
             ProductHasSubProductsResponse productHasSubProductsResponse = productMapper.toProductHasSubProductsResponse(product);

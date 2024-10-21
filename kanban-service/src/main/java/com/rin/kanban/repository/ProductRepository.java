@@ -11,4 +11,5 @@ import java.util.List;
 public interface ProductRepository extends MongoRepository<Product, String> {
     List<Product> findAllByIsDeletedIsNullOrIsDeletedIsFalse();
     Page<Product> findAllByIsDeletedIsNullOrIsDeletedIsFalse(Pageable pageable);
+    Page<Product> findAllBySlugContaining(String slug, Pageable pageable);
 }

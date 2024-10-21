@@ -27,15 +27,23 @@ public class ProductController {
                 .result(productService.createProduct(productRequest))
                 .build();
     }
+
     @GetMapping("/data")
-    public ApiResponse<PageResponse<ProductHasSubProductsResponse>> getAllProducts(@RequestParam(required = false, value = "page") Integer page, @RequestParam(required = false, value = "size") Integer size) {
-        if (page != null && size != null) {
+    public ApiResponse<PageResponse<ProductHasSubProductsResponse>> getAllProducts(
+            @RequestParam(required = false, value = "title") String title,
+            @RequestParam(required = false, value = "page") Integer page,
+            @RequestParam(required = false, value = "size") Integer size) {
+        if(title!=null && page != null && size != null){
+            return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
+                    .result(productService.getProductsWithPageAndSizeAndTitle(page, size, title))
+                    .build();
+        }else if (page != null && size != null) {
             return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
                     .result(productService.getProductsWithPageAndSize(page, size))
                     .build();
         }
         List<ProductHasSubProductsResponse> productHasSubProductsResponses = productService.getProducts();
-        return  ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
+        return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
                 .result(PageResponse.<ProductHasSubProductsResponse>builder()
                         .totalElements(productHasSubProductsResponses.size())
                         .totalPages(1)
@@ -45,26 +53,30 @@ public class ProductController {
                         .build())
                 .build();
     }
+
     @GetMapping("/{productId}")
     public ApiResponse<ProductResponse> getProductById(@PathVariable("productId") String productId) {
         return ApiResponse.<ProductResponse>builder()
                 .result(productService.getProduct(productId))
                 .build();
     }
+
     @DeleteMapping("/{productId}")
     public ApiResponse deleteProductById(@PathVariable("productId") String productId) {
         Boolean isDeleted = productService.deleteProduct(productId);
         return ApiResponse.builder()
                 .result(isDeleted)
-                .message(isDeleted? "Deleted" : "Can't be deleted")
+                .message(isDeleted ? "Deleted" : "Can't be deleted")
                 .build();
     }
+
     @PutMapping("/{productId}")
-    public ApiResponse<ProductResponse> updateProduct(@PathVariable("productId") String productId ,@RequestBody ProductRequest productRequest) {
+    public ApiResponse<ProductResponse> updateProduct(@PathVariable("productId") String productId, @RequestBody ProductRequest productRequest) {
         return ApiResponse.<ProductResponse>builder()
                 .result(productService.updateProduct(productId, productRequest))
                 .build();
     }
+
     @PutMapping("/soft-delete")
     public ApiResponse<Void> softDeleteProduct(@RequestBody SoftDeleteRequest softDeleteRequest) {
         productService.softDeleteProduct(softDeleteRequest);

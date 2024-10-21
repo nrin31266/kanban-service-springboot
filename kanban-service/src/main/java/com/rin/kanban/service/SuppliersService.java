@@ -6,7 +6,11 @@ import com.rin.kanban.data.form.FormModel;
 import com.rin.kanban.dto.request.ExportDataRequest;
 import com.rin.kanban.dto.request.SupplierRequest;
 import com.rin.kanban.dto.response.ExportSupplierDataResponse;
+import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
+import com.rin.kanban.dto.response.SubProductResponse;
 import com.rin.kanban.dto.response.SupplierResponse;
+import com.rin.kanban.entity.Product;
+import com.rin.kanban.entity.SubProduct;
 import com.rin.kanban.entity.Supplier;
 import com.rin.kanban.exception.AppException;
 import com.rin.kanban.exception.ErrorCode;
@@ -87,6 +91,7 @@ public class SuppliersService {
                 .data(pageData.getContent().stream().map(supplierMapper::toSupplierResponse).toList())
                 .build();
     }
+
     public PageResponse<SupplierResponse> getAll() {
         List<SupplierResponse> suppliers= suppliersRepository.findAll().stream().map(supplierMapper::toSupplierResponse).toList();
         return PageResponse.<SupplierResponse>builder()
