@@ -28,6 +28,7 @@ public class Product {
     String content;
     Instant expiredDate = null;
     String[] images;
+    Boolean isDeleted = false;
     @DBRef
     Set<Category> categories;
     @CreatedDate

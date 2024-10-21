@@ -2,6 +2,7 @@ package com.rin.kanban.service;
 
 import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.ProductRequest;
+import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
 import com.rin.kanban.dto.response.ProductResponse;
 import com.rin.kanban.dto.response.SubProductResponse;
@@ -24,7 +25,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,13 +69,13 @@ public class ProductService {
     }
 
     public List<ProductHasSubProductsResponse> getProducts() {
-        List<Product> products = productRepository.findAll();
+        List<Product> products = productRepository.findAllByIsDeletedIsNullOrIsDeletedIsFalse();
         return products.parallelStream().map(product -> {
             ProductHasSubProductsResponse response = productMapper.toProductHasSubProductsResponse(product);
             List<SubProduct> subProducts = subProductRepository.findByProductId(product.getId());
 
             if (!subProducts.isEmpty())
-                response.setSubProductResponse(subProducts.stream().map(subProductMapper::toSubProductResponse).toList());
+                response.setSubProductResponse(subProducts.parallelStream().map(subProductMapper::toSubProductResponse).toList());
             return response;
         }).collect(Collectors.toList());
     }
@@ -80,7 +83,7 @@ public class ProductService {
     public PageResponse<ProductHasSubProductsResponse> getProductsWithPageAndSize(int page, int size) {
         Sort sort = Sort.by("updatedAt").descending();
         Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Product> pageData = productRepository.findAll(pageable);
+        Page<Product> pageData = productRepository.findAllByIsDeletedIsNullOrIsDeletedIsFalse(pageable);
 
         List<ProductHasSubProductsResponse> response = pageData.getContent().stream().map((product) -> {
             List<SubProduct> subProducts = subProductRepository.findByProductId(product.getId());
@@ -114,5 +117,15 @@ public class ProductService {
             product.setCategories(categories);
         }
         return productMapper.toProductResponse(productRepository.save(product));
+    }
+    @Transactional
+    public void softDeleteProduct(SoftDeleteRequest request) {
+        List<Product> productsToDelete = new ArrayList<>();
+        for (String productId : request.getIds()) {
+            Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+            product.setIsDeleted(true);
+            productsToDelete.add(product);
+        }
+        productRepository.saveAll(productsToDelete);
     }
 }

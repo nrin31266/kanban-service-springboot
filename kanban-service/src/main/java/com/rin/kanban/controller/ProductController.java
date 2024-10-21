@@ -3,6 +3,7 @@ package com.rin.kanban.controller;
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.ProductRequest;
+import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
 import com.rin.kanban.dto.response.ProductResponse;
 import com.rin.kanban.service.ProductService;
@@ -27,7 +28,7 @@ public class ProductController {
                 .build();
     }
     @GetMapping("/data")
-    public ApiResponse<PageResponse<ProductHasSubProductsResponse>> getAllProducts(@RequestParam Integer page, @RequestParam Integer size) {
+    public ApiResponse<PageResponse<ProductHasSubProductsResponse>> getAllProducts(@RequestParam(required = false, value = "page") Integer page, @RequestParam(required = false, value = "size") Integer size) {
         if (page != null && size != null) {
             return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
                     .result(productService.getProductsWithPageAndSize(page, size))
@@ -62,6 +63,13 @@ public class ProductController {
     public ApiResponse<ProductResponse> updateProduct(@PathVariable("productId") String productId ,@RequestBody ProductRequest productRequest) {
         return ApiResponse.<ProductResponse>builder()
                 .result(productService.updateProduct(productId, productRequest))
+                .build();
+    }
+    @PutMapping("/soft-delete")
+    public ApiResponse<Void> softDeleteProduct(@RequestBody SoftDeleteRequest softDeleteRequest) {
+        productService.softDeleteProduct(softDeleteRequest);
+        return ApiResponse.<Void>builder()
+                .message("Deleted")
                 .build();
     }
 }
