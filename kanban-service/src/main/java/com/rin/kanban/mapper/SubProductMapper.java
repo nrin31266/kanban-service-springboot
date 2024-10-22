@@ -10,4 +10,7 @@ public interface SubProductMapper {
 
     SubProduct toSubProduct(SubProductRequest subProductRequest);
     SubProductResponse toSubProductResponse(SubProduct subProduct);
+//    @Mapping(target = "value", source = "id")
+//    @Mapping(target = "name", source = "id")
+//    SelectResponse toSelectResponse(SubProduct subProduct);
 }

@@ -28,7 +28,7 @@ import java.util.List;
 public class SuppliersController {
     SuppliersService suppliersService;
 
-    @PostMapping("create")
+    @PostMapping("/create")
     public ApiResponse<SupplierResponse> create(@RequestBody @Validated SupplierRequest request) {
         return ApiResponse.<SupplierResponse>builder()
                 .result(suppliersService.create(request))
