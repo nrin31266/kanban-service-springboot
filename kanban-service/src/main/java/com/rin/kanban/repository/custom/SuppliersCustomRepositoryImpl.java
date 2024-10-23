@@ -1,4 +1,4 @@
-package com.rin.kanban.repository;
+package com.rin.kanban.repository.custom;
 
 import com.rin.kanban.dto.response.ExportSupplierDataResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class SuppliersCustomRepositoryImpl implements SuppliersCustomRepository 
         Aggregation aggregation;
         ProjectionOperation projectionOperation = Aggregation.project(fields);
         if(start != null && end != null) {
-            MatchOperation matchOperation = Aggregation.match(Criteria.where("createdAt").gte(start).lte(end));
+            MatchOperation matchOperation = Aggregation.match(Criteria.where("updateAt").gte(start).lte(end));
             aggregation = Aggregation.newAggregation(
                     matchOperation,
                     projectionOperation

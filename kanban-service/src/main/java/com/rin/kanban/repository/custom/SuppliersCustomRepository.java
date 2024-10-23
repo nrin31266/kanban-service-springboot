@@ -1,4 +1,4 @@
-package com.rin.kanban.repository;
+package com.rin.kanban.repository.custom;
 
 import com.rin.kanban.dto.response.ExportSupplierDataResponse;
 
@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface SuppliersCustomRepository {
     List<ExportSupplierDataResponse> findSuppliersByFieldsAndDateRange(String[] fields, Instant start, Instant end);
+
 }
