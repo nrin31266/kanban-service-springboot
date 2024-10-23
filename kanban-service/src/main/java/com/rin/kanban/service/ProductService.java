@@ -2,6 +2,7 @@ package com.rin.kanban.service;
 
 import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.ProductRequest;
+import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
 import com.rin.kanban.dto.response.ProductResponse;
@@ -16,6 +17,7 @@ import com.rin.kanban.mapper.SubProductMapper;
 import com.rin.kanban.repository.CategoryRepository;
 import com.rin.kanban.repository.ProductRepository;
 import com.rin.kanban.repository.SubProductRepository;
+import com.rin.kanban.repository.custom.ProductCustomRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -27,10 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +42,7 @@ public class ProductService {
     CategoryRepository categoryRepository;
     SubProductRepository subProductRepository;
     SubProductMapper subProductMapper;
+    ProductCustomRepository productCustomRepository;
     public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = productMapper.toProduct(productRequest);
         Set<String> categoryIdsConfirmed = new HashSet<>();
@@ -146,5 +146,10 @@ public class ProductService {
             productsToDelete.add(product);
         }
         productRepository.saveAll(productsToDelete);
+    }
+
+    public PageResponse<ProductHasSubProductsResponse> getProductsByFilterValues(ProductsFilterValuesRequest request) {
+        Page<Product> productPage = productCustomRepository.findAllByFilterValues(request);
+        return getSubProductsByPage(productPage);
     }
 }

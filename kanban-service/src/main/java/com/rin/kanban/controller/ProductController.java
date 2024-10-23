@@ -3,6 +3,7 @@ package com.rin.kanban.controller;
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.ProductRequest;
+import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
 import com.rin.kanban.dto.response.ProductResponse;
@@ -10,16 +11,21 @@ import com.rin.kanban.service.ProductService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.commons.security.ResourceServerTokenRelayAutoConfiguration;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductController {
     ProductService productService;
+    private final ResourceServerTokenRelayAutoConfiguration resourceServerTokenRelayAutoConfiguration;
 
     @PostMapping
     public ApiResponse<ProductResponse> createProduct(@RequestBody ProductRequest productRequest) {
@@ -27,8 +33,9 @@ public class ProductController {
                 .result(productService.createProduct(productRequest))
                 .build();
     }
+
     @GetMapping
-    public ApiResponse<PageResponse<ProductResponse>> getProducts(){
+    public ApiResponse<PageResponse<ProductResponse>> getProducts() {
         List<ProductResponse> products = productService.getProducts();
         return ApiResponse.<PageResponse<ProductResponse>>builder()
                 .result(PageResponse.<ProductResponse>builder()
@@ -40,16 +47,17 @@ public class ProductController {
                         .build())
                 .build();
     }
+
     @GetMapping("/data")
     public ApiResponse<PageResponse<ProductHasSubProductsResponse>> getAllProducts(
             @RequestParam(required = false, value = "title") String title,
             @RequestParam(required = false, value = "page") Integer page,
             @RequestParam(required = false, value = "size") Integer size) {
-        if(title!=null && page != null && size != null){
+        if (title != null && page != null && size != null) {
             return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
                     .result(productService.getProductsWithPageAndSizeAndTitle(page, size, title))
                     .build();
-        }else if (page != null && size != null) {
+        } else if (page != null && size != null) {
             return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
                     .result(productService.getProductsWithPageAndSize(page, size))
                     .build();
@@ -96,5 +104,13 @@ public class ProductController {
         return ApiResponse.<Void>builder()
                 .message("Deleted")
                 .build();
+    }
+
+    @PostMapping("/filter")
+    public ApiResponse<PageResponse<ProductHasSubProductsResponse>> getProductsByFilter(@RequestBody @Validated ProductsFilterValuesRequest request) {
+        return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
+                .result(productService.getProductsByFilterValues(request))
+                .build();
+
     }
 }

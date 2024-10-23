@@ -1,49 +1,99 @@
 package com.rin.kanban.repository.custom;
 
+import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
+import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
 import com.rin.kanban.entity.Category;
 import com.rin.kanban.entity.Product;
+import com.rin.kanban.entity.SubProduct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
+import org.springframework.data.mongodb.core.aggregation.LookupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
-import java.awt.print.Pageable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @RequiredArgsConstructor
 @Repository
-public class ProductCustomRepositoryImp implements ProductCustomRepository{
+public class ProductCustomRepositoryImp implements ProductCustomRepository {
 
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public List<Product> findAllByFilterValues(ProductsFilterValuesRequest request, Pageable pageable) {
-        Query query = new Query();
-        // Xử lý categories
-        if (request.getCategoriesId() != null && !request.getCategoriesId().isEmpty()) {
-            List<Category> categories = mongoTemplate.find(Query.query(Criteria.where("id").in(request.getCategoriesId())), Category.class);
-            Set<Category> categorySet = Set.copyOf(categories);
-            query.addCriteria(Criteria.where("categories").in(categorySet));
+    public Page<Product> findAllByFilterValues(ProductsFilterValuesRequest request) {
+        List<AggregationOperation> operations = new ArrayList<>();
+
+        // Lookup: Perform a join with the sub-products collection
+        LookupOperation lookupOperation = Aggregation.lookup("sub-products", "_id", "productId", "subProducts");
+        operations.add(lookupOperation);
+
+        // Filter by category IDs if provided
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            MatchOperation matchByCategoryIds = Aggregation.match(Criteria.where("categoryIds").all(request.getCategoryIds()));
+            operations.add(matchByCategoryIds);
         }
 
-        return mongoTemplate.find(query, Product.class);
+        // Filter by colors if provided
+        if (request.getColors() != null && !request.getColors().isEmpty()) {
+            MatchOperation matchByColor = Aggregation.match(Criteria.where("subProducts.color").in(request.getColors()));
+            operations.add(matchByColor);
+        }
+
+        // Filter by sizes if provided
+        if (request.getSizes() != null && !request.getSizes().isEmpty()) {
+            MatchOperation matchBySize = Aggregation.match(Criteria.where("subProducts.size").in(request.getSizes()));
+            operations.add(matchBySize);
+        }
+
+        if (request.getMinPrice() != null && request.getMaxPrice() != null) {
+            MatchOperation matchByPrice = Aggregation.match(Criteria.where("subProducts").elemMatch(Criteria.where("price")
+                    .gte(request.getMinPrice())
+                    .lte(request.getMaxPrice())));
+            operations.add(matchByPrice);
+            log.info("Filtering by price range: {} - {}", request.getMinPrice(), request.getMaxPrice());
+        } else if (request.getMinPrice() != null) {
+            MatchOperation matchByMinPrice = Aggregation.match(Criteria.where("subProducts").elemMatch(Criteria.where("price")
+                    .gte(request.getMinPrice())));
+            operations.add(matchByMinPrice);
+            log.info("Filtering by min price: {}", request.getMinPrice());
+        } else if (request.getMaxPrice() != null) {
+            MatchOperation matchByMaxPrice = Aggregation.match(Criteria.where("subProducts").elemMatch(Criteria.where("price")
+                    .lte(request.getMaxPrice())));
+            operations.add(matchByMaxPrice);
+            log.info("Filtering by max price: {}", request.getMaxPrice());
+        }
+
+
+        // Sorting and pagination
+        operations.add(Aggregation.sort(Sort.by(Sort.Direction.DESC, "updatedAt")));
+        operations.add(Aggregation.skip((long) (request.getPage() - 1) * request.getSize()));
+        operations.add(Aggregation.limit(request.getSize()));
+
+        // Handle aggregation
+        Aggregation aggregation = Aggregation.newAggregation(operations);
+        List<Product> products = mongoTemplate.aggregate(aggregation, "products", Product.class).getMappedResults();
+
+        // Calculate total elements for pagination
+        long totalElements = mongoTemplate.count(new Query(), Product.class);
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize());
+
+        // Return paginated result
+        return PageableExecutionUtils.getPage(products, pageable, () -> totalElements);
     }
-//    if(request.getColors()!=null && !request.getColors().isEmpty()){
-//        query.addCriteria(Criteria.where("color").is(request.getColors()));
-//    }
-//        if(request.getSizes()!=null && !request.getSizes().isEmpty()){
-//        query.addCriteria(Criteria.where("sizes").is(request.getSizes()));
-//    }
-//        if (request.getMinPrice()!=null && request.getMaxPrice()!=null && request.getMinPrice().compareTo(request.getMaxPrice()) < 0){
-//        query.addCriteria(Criteria.where("price").gte(request.getMinPrice()).lte(request.getMaxPrice()));
-//    }else if(request.getMinPrice()!=null && request.getMaxPrice()==null){
-//        query.addCriteria(Criteria.where("price").gte(request.getMinPrice()));
-//    }else if (request.getMinPrice()==null && request.getMaxPrice()!=null){
-//        query.addCriteria(Criteria.where("price").gte(request.getMaxPrice()));
-//    }
 }

@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -35,4 +36,6 @@ public class Product {
     @LastModifiedDate
     Instant updatedAt;
 
+    // This field will contain result from lookup
+    private List<SubProduct> subProducts;
 }

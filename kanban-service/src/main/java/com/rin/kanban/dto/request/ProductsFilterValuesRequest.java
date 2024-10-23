@@ -12,9 +12,11 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductsFilterValuesRequest {
-    Set<String> categoriesId;
+    Set<String> categoryIds;
     Set<String> colors;
     Set<String> sizes;
     BigDecimal minPrice;
     BigDecimal maxPrice;
+    Integer page;
+    Integer size;
 }
