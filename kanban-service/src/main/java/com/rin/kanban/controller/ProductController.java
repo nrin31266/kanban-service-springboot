@@ -27,7 +27,19 @@ public class ProductController {
                 .result(productService.createProduct(productRequest))
                 .build();
     }
-
+    @GetMapping
+    public ApiResponse<PageResponse<ProductResponse>> getProducts(){
+        List<ProductResponse> products = productService.getProducts();
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
+                .result(PageResponse.<ProductResponse>builder()
+                        .data(products)
+                        .pageSize(1)
+                        .currentPage(1)
+                        .totalPages(1)
+                        .totalElements(products.size())
+                        .build())
+                .build();
+    }
     @GetMapping("/data")
     public ApiResponse<PageResponse<ProductHasSubProductsResponse>> getAllProducts(
             @RequestParam(required = false, value = "title") String title,
@@ -42,16 +54,17 @@ public class ProductController {
                     .result(productService.getProductsWithPageAndSize(page, size))
                     .build();
         }
-        List<ProductHasSubProductsResponse> productHasSubProductsResponses = productService.getProducts();
-        return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
-                .result(PageResponse.<ProductHasSubProductsResponse>builder()
-                        .totalElements(productHasSubProductsResponses.size())
-                        .totalPages(1)
-                        .currentPage(1)
-                        .pageSize(1)
-                        .data(productHasSubProductsResponses)
-                        .build())
-                .build();
+        return null;
+//        List<ProductHasSubProductsResponse> productHasSubProductsResponses = productService.getProductsData();
+//        return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
+//                .result(PageResponse.<ProductHasSubProductsResponse>builder()
+//                        .totalElements(productHasSubProductsResponses.size())
+//                        .totalPages(1)
+//                        .currentPage(1)
+//                        .pageSize(1)
+//                        .data(productHasSubProductsResponses)
+//                        .build())
+//                .build();
     }
 
     @GetMapping("/{productId}")

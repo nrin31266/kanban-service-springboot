@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,14 +43,13 @@ public class ProductService {
     CategoryRepository categoryRepository;
     SubProductRepository subProductRepository;
     SubProductMapper subProductMapper;
-
     public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = productMapper.toProduct(productRequest);
-        HashSet<Category> categories = new HashSet<>();
-        productRequest.getCategories().forEach((categoryId -> {
-            categories.add(categoryRepository.findById(categoryId).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND)));
+        Set<String> categoryIdsConfirmed = new HashSet<>();
+        productRequest.getCategoryIds().forEach((categoryId -> {
+            categoryIdsConfirmed.add(categoryRepository.findById(categoryId).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND)).getId());
         }));
-        product.setCategories(categories);
+        product.setCategoryIds(categoryIdsConfirmed);
         return productMapper.toProductResponse(productRepository.save(product));
     }
 
@@ -68,18 +68,20 @@ public class ProductService {
         return productMapper.toProductResponse(productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND)));
     }
 
-    public List<ProductHasSubProductsResponse> getProducts() {
-        List<Product> products = productRepository.findAllByIsDeletedIsNullOrIsDeletedIsFalse();
-        return products.parallelStream().map(product -> {
-            ProductHasSubProductsResponse response = productMapper.toProductHasSubProductsResponse(product);
-            log.info(response.toString());
-            List<SubProduct> subProducts = subProductRepository.findByProductId(product.getId());
-
-            if (!subProducts.isEmpty())
-                response.setSubProductResponse(subProducts.parallelStream().map(subProductMapper::toSubProductResponse).toList());
-            return response;
-        }).collect(Collectors.toList());
+    public List<ProductResponse> getProducts() {
+        List<Product> products = productRepository.findAll();
+        return products.stream().map(productMapper::toProductResponse).collect(Collectors.toList());
     }
+//    public List<ProductHasSubProductsResponse> getProductsData() {
+//        List<Product> products = productRepository.findAllByIsDeletedIsNullOrIsDeletedIsFalse();
+//        return products.parallelStream().map(product -> {
+//            ProductHasSubProductsResponse response = productMapper.toProductHasSubProductsResponse(product);
+//            List<SubProduct> subProducts = subProductRepository.findByProductId(product.getId());
+//            if (!subProducts.isEmpty())
+//                response.setSubProductResponse(subProducts.stream().map(subProductMapper::toSubProductResponse).toList());
+//            return response;
+//        }).collect(Collectors.toList());
+//    }
 
     public PageResponse<ProductHasSubProductsResponse> getProductsWithPageAndSize(int page, int size) {
         Sort sort = Sort.by("updatedAt").descending();
@@ -100,6 +102,12 @@ public class ProductService {
         List<ProductHasSubProductsResponse> response = pageData.getContent().stream().map((product) -> {
             List<SubProduct> subProducts = subProductRepository.findByProductId(product.getId());
             ProductHasSubProductsResponse productHasSubProductsResponse = productMapper.toProductHasSubProductsResponse(product);
+            Set<Category> categories = new HashSet<>();
+            product.getCategoryIds().forEach((categoryId)->{
+                Category category = categoryRepository.findById(categoryId).orElse(null);
+                categories.add(category);
+            });
+            productHasSubProductsResponse.setCategories(categories);
             if (!subProducts.isEmpty()) {
                 List<SubProductResponse> subProductResponses = subProducts.stream().map(subProductMapper::toSubProductResponse).toList();
                 productHasSubProductsResponse.setSubProductResponse(subProductResponses);
@@ -119,14 +127,13 @@ public class ProductService {
     public ProductResponse updateProduct(String productId, ProductRequest productRequest) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         productMapper.updateProduct(product, productRequest);
-
-        if (productRequest.getCategories() != null) {
-            HashSet<Category> categories = new HashSet<>();
-            productRequest.getCategories().forEach((categoryId -> {
+        if (productRequest.getCategoryIds() != null) {
+           Set<String> categoryIdConfirm = new HashSet<>();
+            productRequest.getCategoryIds().forEach((categoryId -> {
                 Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
-                categories.add(category);
+                categoryIdConfirm.add(category.getId());
             }));
-            product.setCategories(categories);
+            product.setCategoryIds(categoryIdConfirm);
         }
         return productMapper.toProductResponse(productRepository.save(product));
     }

@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -114,32 +115,20 @@ public class CategoryService {
                 .data(pageData.getContent().stream().map(categoryMapper::toCategoryResponse).toList())
                 .build();
     }
-
+    @Transactional
     public Boolean deleteCategory(String categoryId) {
         try {
-            // Tìm category theo ID hoặc ném lỗi nếu không tìm thấy
             Category category = categoryRepository.findById(categoryId)
                     .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
-
-            // Xóa danh mục và cập nhật danh mục con (nếu có)
             categoryRepository.deleteById(categoryId);
-
-            // Tìm tất cả các danh mục con của danh mục vừa xóa
             List<Category> categoriesChildren = categoryRepository.findAllByParentId(categoryId);
-
-            // Cập nhật parentId của các danh mục con
             categoriesChildren.forEach(item -> item.setParentId(category.getParentId() != null ? category.getParentId() : null));
-
-            // Lưu lại các danh mục con đã cập nhật
             categoryRepository.saveAll(categoriesChildren);
 
             return true;
         } catch (AppException e) {
-            // Xử lý lỗi nghiệp vụ
             throw e;
         } catch (Exception e) {
-            // Xử lý các lỗi không mong muốn
-            e.printStackTrace();  // Log lỗi để dễ dàng debug hơn
             return false;
         }
     }

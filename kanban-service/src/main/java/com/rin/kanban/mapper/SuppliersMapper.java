@@ -12,9 +12,9 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface SuppliersMapper {
-    @Mapping(target = "categories", ignore = true)
+    @Mapping(target = "categoryIds", ignore = true)
     Supplier toSupplier(SupplierRequest request);
-    @Mapping(target = "categories", ignore = true)
+    @Mapping(target = "categoryIds", ignore = true)
     void supplierUpdate(@MappingTarget Supplier supplier, SupplierRequest request);
     SupplierResponse toSupplierResponse(Supplier supplier);
 

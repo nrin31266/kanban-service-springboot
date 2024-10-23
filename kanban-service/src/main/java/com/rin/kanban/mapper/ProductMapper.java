@@ -10,11 +10,12 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
-    @Mapping(target = "categories", ignore = true)
+    @Mapping(target = "categoryIds", ignore = true)
     Product toProduct(ProductRequest request);
     ProductResponse toProductResponse(Product product);
-    @Mapping(target = "categories", ignore = true)
+    @Mapping(target = "categoryIds", ignore = true)
     void updateProduct(@MappingTarget Product product, ProductRequest request);
     @Mapping(target = "subProductResponse", ignore = true)
+    @Mapping(target = "categories", ignore = true)
     ProductHasSubProductsResponse toProductHasSubProductsResponse(Product product);
 }

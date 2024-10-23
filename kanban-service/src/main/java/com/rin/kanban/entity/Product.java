@@ -25,12 +25,11 @@ public class Product {
     String description;
     String slug;
     String supplierId;
-    String content;
+    String content=null;
     Instant expiredDate = null;
     String[] images;
     Boolean isDeleted = false;
-    @DBRef
-    Set<Category> categories;
+    Set<String> categoryIds;
     @CreatedDate
     Instant createdAt;
     @LastModifiedDate

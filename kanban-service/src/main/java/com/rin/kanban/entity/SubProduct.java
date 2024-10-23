@@ -26,8 +26,8 @@ public class SubProduct {
     BigDecimal price;
     Long quantity;
     Set<String> images;
-    @DBRef
-    Product product;
+    String productId;
+    Boolean isDeleted = false;
     @CreatedDate
     Instant createdAt;
     @LastModifiedDate

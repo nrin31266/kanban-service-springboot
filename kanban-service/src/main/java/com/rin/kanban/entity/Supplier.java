@@ -27,13 +27,13 @@ public class Supplier {
     String slug;
     String name;
     String product;
-    @DBRef
-    Set<Category> categories;
+    Set<String> categoryIds;
     BigDecimal price;
     String contact;
     Boolean talking;
     Integer onTheWay;
     String email;
+    Boolean isDeleted = false;
     @CreatedDate
     Instant createdAt;
     @LastModifiedDate

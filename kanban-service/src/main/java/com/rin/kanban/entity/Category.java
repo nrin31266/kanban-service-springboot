@@ -22,6 +22,7 @@ public class Category {
     String parentId;
     String description;
     String slug;
+    Boolean isDeleted = false;
     @CreatedDate
     Instant createdAt;
     @LastModifiedDate

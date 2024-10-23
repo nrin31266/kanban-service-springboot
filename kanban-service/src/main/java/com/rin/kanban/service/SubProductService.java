@@ -29,10 +29,9 @@ public class SubProductService {
     SubProductMapper subProductMapper;
 
     public SubProductResponse createSubProduct(SubProductRequest subProductRequest) {
-
         SubProduct subProduct = subProductMapper.toSubProduct(subProductRequest);
-        Product product = productRepository.findById(subProductRequest.getProductId()).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-        subProduct.setProduct(product);
+        String productIdConfirmed = productRepository.findById(subProductRequest.getProductId()).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND)).getId();
+        subProduct.setProductId(productIdConfirmed);
         return subProductMapper.toSubProductResponse(subProductRepository.save(subProduct));
     }
 

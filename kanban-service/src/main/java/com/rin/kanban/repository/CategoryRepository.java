@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface CategoryRepository extends MongoRepository<Category, String> {
     Optional<Category> findByParentIdAndSlug(String parentId, String slug);
     List<Category> findAllByParentId(String parentId);
+
 }
