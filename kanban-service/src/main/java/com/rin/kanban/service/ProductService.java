@@ -43,6 +43,7 @@ public class ProductService {
     SubProductRepository subProductRepository;
     SubProductMapper subProductMapper;
     ProductCustomRepository productCustomRepository;
+
     public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = productMapper.toProduct(productRequest);
         Set<String> categoryIdsConfirmed = new HashSet<>();
@@ -86,10 +87,11 @@ public class ProductService {
     public PageResponse<ProductHasSubProductsResponse> getProductsWithPageAndSize(int page, int size) {
         Sort sort = Sort.by("updatedAt").descending();
         Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Product> pageData = productRepository.findAllByIsDeletedIsNullOrIsDeletedIsFalse(pageable);
+        Page<Product> pageData = productRepository.findAllByIsDeletedIsNullOrFalse(pageable);
 
         return getSubProductsByPage(pageData);
     }
+
     public PageResponse<ProductHasSubProductsResponse> getProductsWithPageAndSizeAndTitle(int page, int size, String title) {
         log.info(title);
         Sort sort = Sort.by("updatedAt").descending();
@@ -98,16 +100,19 @@ public class ProductService {
 
         return getSubProductsByPage(pageData);
     }
-    private PageResponse<ProductHasSubProductsResponse> getSubProductsByPage (Page<Product> pageData){
+
+    private PageResponse<ProductHasSubProductsResponse> getSubProductsByPage(Page<Product> pageData) {
         List<ProductHasSubProductsResponse> response = pageData.getContent().stream().map((product) -> {
-            List<SubProduct> subProducts = subProductRepository.findByProductId(product.getId());
+            List<SubProduct> subProducts = subProductRepository.findAllByProductIdAndIsDeletedNullOrFalse(product.getId());
             ProductHasSubProductsResponse productHasSubProductsResponse = productMapper.toProductHasSubProductsResponse(product);
-            Set<Category> categories = new HashSet<>();
-            product.getCategoryIds().forEach((categoryId)->{
-                Category category = categoryRepository.findById(categoryId).orElse(null);
-                categories.add(category);
-            });
-            productHasSubProductsResponse.setCategories(categories);
+            if (product.getCategoryIds() != null && !product.getCategoryIds().isEmpty()) {
+                Set<Category> categories = new HashSet<>();
+                product.getCategoryIds().forEach((categoryId) -> {
+                    Category category = categoryRepository.findById(categoryId).orElse(null);
+                    categories.add(category);
+                });
+                productHasSubProductsResponse.setCategories(categories);
+            }
             if (!subProducts.isEmpty()) {
                 List<SubProductResponse> subProductResponses = subProducts.stream().map(subProductMapper::toSubProductResponse).toList();
                 productHasSubProductsResponse.setSubProductResponse(subProductResponses);
@@ -117,7 +122,7 @@ public class ProductService {
 
         return PageResponse.<ProductHasSubProductsResponse>builder()
                 .pageSize(pageData.getSize())
-                .currentPage(pageData.getNumber()+1)
+                .currentPage(pageData.getNumber() + 1)
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
                 .data(response)
@@ -128,7 +133,7 @@ public class ProductService {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         productMapper.updateProduct(product, productRequest);
         if (productRequest.getCategoryIds() != null) {
-           Set<String> categoryIdConfirm = new HashSet<>();
+            Set<String> categoryIdConfirm = new HashSet<>();
             productRequest.getCategoryIds().forEach((categoryId -> {
                 Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
                 categoryIdConfirm.add(category.getId());
@@ -137,6 +142,7 @@ public class ProductService {
         }
         return productMapper.toProductResponse(productRepository.save(product));
     }
+
     @Transactional
     public void softDeleteProduct(SoftDeleteRequest request) {
         List<Product> productsToDelete = new ArrayList<>();
@@ -150,6 +156,7 @@ public class ProductService {
 
     public PageResponse<ProductHasSubProductsResponse> getProductsByFilterValues(ProductsFilterValuesRequest request) {
         Page<Product> productPage = productCustomRepository.findAllByFilterValues(request);
+        log.info(productPage.getContent().toString());
         return getSubProductsByPage(productPage);
     }
 }

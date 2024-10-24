@@ -1,6 +1,8 @@
 package com.rin.kanban.service;
 
+import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.request.SubProductRequest;
+import com.rin.kanban.dto.request.UpdateSubProductRequest;
 import com.rin.kanban.dto.response.SelectDataResponse;
 import com.rin.kanban.dto.response.SubProductResponse;
 import com.rin.kanban.entity.Product;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -36,7 +39,7 @@ public class SubProductService {
     }
 
     public List<SelectDataResponse> getFilterValues() {
-        List<SubProduct> subProducts = subProductRepository.findIdAndName();
+        List<SubProduct> subProducts = subProductRepository.findColorsAndSizeInSubProducts();
         List<SelectDataResponse> selectDataResponses = new ArrayList<>();
         SelectDataResponse selectColors = new SelectDataResponse("colors", new ArrayList<>());
         SelectDataResponse selectSizes = new SelectDataResponse("sizes", new ArrayList<>());
@@ -58,6 +61,29 @@ public class SubProductService {
         selectDataResponses.add(selectColors);
         selectDataResponses.add(selectSizes);
         return selectDataResponses;
+    }
+
+    public List<SubProductResponse> getSubProductsByProductId(String productId) {
+        List<SubProduct> subProducts = subProductRepository.findAllByProductIdAndIsDeletedNullOrFalse(productId);
+        return subProducts.stream().map(subProductMapper::toSubProductResponse).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<SubProductResponse> softDeleteProduct(SoftDeleteRequest request) {
+        List<SubProduct> subProductsToDelete = new ArrayList<>();
+
+        for (String productId : request.getIds()) {
+            SubProduct subProduct = subProductRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+            subProduct.setIsDeleted(true);
+            subProductsToDelete.add(subProduct);
+        }
+        return subProductRepository.saveAll(subProductsToDelete).stream().map(subProductMapper::toSubProductResponse).collect(Collectors.toList());
+    }
+
+    public SubProductResponse updateSubProduct(UpdateSubProductRequest request, String subProductId) {
+        SubProduct subProduct = subProductRepository.findById(subProductId).orElseThrow(() -> new AppException(ErrorCode.SUB_PRODUCT_NOT_FOUND));
+        subProductMapper.updateSubProduct(subProduct, request);
+        return subProductMapper.toSubProductResponse(subProductRepository.save(subProduct));
     }
 
 }

@@ -37,5 +37,6 @@ public class Product {
     Instant updatedAt;
 
     // This field will contain result from lookup
-    private List<SubProduct> subProducts;
+    List<SubProduct> subProducts;
+    List<Long> filteredSubProducts;
 }

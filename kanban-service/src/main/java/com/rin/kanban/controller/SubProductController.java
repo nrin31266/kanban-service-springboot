@@ -1,7 +1,9 @@
 package com.rin.kanban.controller;
 
 import com.rin.kanban.dto.ApiResponse;
+import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.request.SubProductRequest;
+import com.rin.kanban.dto.request.UpdateSubProductRequest;
 import com.rin.kanban.dto.response.SelectDataResponse;
 import com.rin.kanban.dto.response.SubProductResponse;
 import com.rin.kanban.service.SubProductService;
@@ -31,6 +33,24 @@ public class SubProductController {
     public ApiResponse<List<SelectDataResponse>> getSubProducts() {
         return ApiResponse.<List<SelectDataResponse>>builder()
                 .result(subProductService.getFilterValues())
+                .build();
+    }
+    @GetMapping("/product-detail/{productId}")
+    public ApiResponse<List<SubProductResponse>> getSubProductsByProductId(@PathVariable("productId") String productId) {
+        return ApiResponse.<List<SubProductResponse>>builder()
+                .result(subProductService.getSubProductsByProductId(productId))
+                .build();
+    }
+    @PutMapping("/soft-delete")
+    public ApiResponse<List<SubProductResponse>> softDeleteSubProduct(@RequestBody SoftDeleteRequest subProductRequest) {
+        return ApiResponse.<List<SubProductResponse>>builder()
+                .result(subProductService.softDeleteProduct(subProductRequest))
+                .build();
+    }
+    @PutMapping("/{subProductId}")
+    public ApiResponse<SubProductResponse> updateSubProduct(@RequestBody UpdateSubProductRequest updateSubProductRequest, @PathVariable("subProductId") String subProductId) {
+        return ApiResponse.<SubProductResponse>builder()
+                .result(subProductService.updateSubProduct(updateSubProductRequest, subProductId))
                 .build();
     }
 }

@@ -17,12 +17,13 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SubProductResponse {
+    String id;
     String size;
     String color;
     BigDecimal price;
-    Long quantity;
+    BigDecimal quantity;
     Set<String> images;
-    Product product;
+    String productId;
     Instant createdAt;
     Instant updatedAt;
 }

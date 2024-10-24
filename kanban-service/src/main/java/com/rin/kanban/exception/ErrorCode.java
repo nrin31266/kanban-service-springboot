@@ -18,6 +18,7 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(10019, "Category not found", HttpStatus.NOT_FOUND),
     PRODUCT_NOT_FOUND(10020, "Product not found", HttpStatus.NOT_FOUND),
     EXISTED_PRODUCT(10021, "There are existing products with this category", HttpStatus.CONFLICT),
+    SUB_PRODUCT_NOT_FOUND(10022, "Sub product not found", HttpStatus.NOT_FOUND),
     ;
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

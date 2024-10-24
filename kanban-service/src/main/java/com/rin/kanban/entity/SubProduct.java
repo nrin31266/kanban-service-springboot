@@ -23,7 +23,8 @@ public class SubProduct {
     String color;
     @Field(targetType = FieldType.DECIMAL128)
     BigDecimal price;
-    Long quantity;
+    @Field(targetType = FieldType.DECIMAL128)
+    BigDecimal quantity;
     Set<String> images;
     String productId;
     Boolean isDeleted = false;
