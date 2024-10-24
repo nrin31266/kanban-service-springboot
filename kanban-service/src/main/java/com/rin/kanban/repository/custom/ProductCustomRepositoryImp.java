@@ -8,6 +8,7 @@ import com.rin.kanban.entity.Product;
 import com.rin.kanban.entity.SubProduct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.Decimal128;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -63,21 +64,19 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
 
         if (request.getMinPrice() != null && request.getMaxPrice() != null) {
             MatchOperation matchByPrice = Aggregation.match(Criteria.where("subProducts").elemMatch(Criteria.where("price")
-                    .gte(request.getMinPrice())
-                    .lte(request.getMaxPrice())));
+                    .gte(new Decimal128(request.getMinPrice()))
+                    .lte(new Decimal128(request.getMaxPrice()))));
             operations.add(matchByPrice);
-            log.info("Filtering by price range: {} - {}", request.getMinPrice(), request.getMaxPrice());
         } else if (request.getMinPrice() != null) {
             MatchOperation matchByMinPrice = Aggregation.match(Criteria.where("subProducts").elemMatch(Criteria.where("price")
-                    .gte(request.getMinPrice())));
+                    .gte(new Decimal128(request.getMinPrice()))));
             operations.add(matchByMinPrice);
-            log.info("Filtering by min price: {}", request.getMinPrice());
         } else if (request.getMaxPrice() != null) {
             MatchOperation matchByMaxPrice = Aggregation.match(Criteria.where("subProducts").elemMatch(Criteria.where("price")
-                    .lte(request.getMaxPrice())));
+                    .lte(new Decimal128(request.getMaxPrice()))));
             operations.add(matchByMaxPrice);
-            log.info("Filtering by max price: {}", request.getMaxPrice());
         }
+
 
 
         // Sorting and pagination
@@ -96,4 +95,6 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
         // Return paginated result
         return PageableExecutionUtils.getPage(products, pageable, () -> totalElements);
     }
+
+
 }

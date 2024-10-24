@@ -4,9 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.MongoId;
+import org.springframework.data.mongodb.core.mapping.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -23,6 +21,7 @@ public class SubProduct {
     String id;
     String size;
     String color;
+    @Field(targetType = FieldType.DECIMAL128)
     BigDecimal price;
     Long quantity;
     Set<String> images;
