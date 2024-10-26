@@ -1,6 +1,5 @@
 package com.rin.kanban.service;
 
-import com.google.api.client.auth.oauth2.BearerToken;
 import com.rin.kanban.dto.request.CreateUserRequest;
 import com.rin.kanban.dto.response.UserInfoResponse;
 import com.rin.kanban.dto.response.UserResponse;
@@ -16,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -47,14 +47,19 @@ public class UserService {
 
         var userRole = new HashSet<Role>();
         userRole.add(roleRepository.findById("USER")
-                .orElseThrow(()->new RuntimeException("Role USER not found")));
+                .orElseThrow(()->new AppException(ErrorCode.ROLE_NOT_FOUND)));
 
         user.setRoles(userRole);
 
         if ((request.getPassword() != null)) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
-        return userMapper.toUserResponse(userRepository.save(user));
+        try {
+            user = userRepository.save(user);
+        }catch (DataIntegrityViolationException e){
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+        return userMapper.toUserResponse(user);
     }
     public UserInfoResponse getInfo(){
         var context = SecurityContextHolder.getContext();

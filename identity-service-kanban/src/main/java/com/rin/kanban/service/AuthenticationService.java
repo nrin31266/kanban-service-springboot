@@ -1,9 +1,5 @@
 package com.rin.kanban.service;
 
-import com.google.firebase.FirebaseException;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseToken;
-import com.google.firebase.auth.UserRecord;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -21,6 +17,8 @@ import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.UserMapper;
 import com.rin.kanban.repository.InvalidatedTokenRepository;
 import com.rin.kanban.repository.UserRepository;
+import com.rin.kanban.repository.httpclient.OutboundIdentityClient;
+import com.rin.kanban.repository.httpclient.OutboundUserClient;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -45,45 +43,63 @@ import java.util.*;
 public class AuthenticationService {
     InvalidatedTokenRepository invalidatedTokenRepository;
     UserService userService;
-    private final FirebaseAuth firebaseAuth;
     UserRepository userRepository;
     UserMapper userMapper;
+
+    OutboundIdentityClient outboundIdentityClient;
+    OutboundUserClient outboundUserClient;
 
     @NonFinal
     @Value("${jwt.signerKey}")
     String SIGNER_KEY;
 
-    public AuthenticationResponse outboundLogin(OutboundUserRequest request) {
-        try {
-            // Xác thực ID token
-            FirebaseToken decodedToken = firebaseAuth.verifyIdToken(request.getIdToken());
-            String uid = decodedToken.getUid();
-            //
-            validateTokenIssuedAt(decodedToken, uid);
-            //
-            FirebaseAuth.getInstance().revokeRefreshTokens(uid);
-            String email = decodedToken.getEmail();
-            log.info("User email : {}", email);
-            Optional<User> user = userRepository.findByEmail(email);
-            if (user.isEmpty()) {
-                String displayName = decodedToken.getName();
-                //String photoUrl = decodedToken.getPicture();
-                var userResponse = userService.createUser(
-                        CreateUserRequest.builder()
-                                .name(displayName)
-                                .email(email)
-                                .build()
-                );
-                user = Optional.of(userMapper.toUser(userResponse));
-            }
-            var token = generateToken(user.get());
+    @NonFinal
+    @Value("${outbound.identity.client-id}")
+    protected String CLIENT_ID;
 
-            return AuthenticationResponse.builder()
-                    .token(token)
-                    .build();
-        } catch (FirebaseException e) {
-            throw new AppException(ErrorCode.INVALID_KEY);
+    @NonFinal
+    @Value("${outbound.identity.client-secret}")
+    protected String CLIENT_SECRET;
+
+    @NonFinal
+    @Value("${outbound.identity.redirect-uri}")
+    protected String REDIRECT_URI;
+
+    @NonFinal
+    @Value("authorization_code")
+    protected String GRANT_TYPE;
+
+    public AuthenticationResponse outboundLogin(String code) {
+        var response = outboundIdentityClient.exchangeToken(
+                ExchangeTokenRequest.builder()
+                        .code(code)
+                        .clientId(CLIENT_ID)
+                        .clientSecret(CLIENT_SECRET)
+                        .redirectUri(REDIRECT_URI)
+                        .grantType(GRANT_TYPE)
+                        .build()
+        );
+        //Get user info
+        var userInfo = outboundUserClient.getUserInfo("json", response.getAccessToken());
+        log.info("USER INFO: {}", userInfo);
+        //Onboard user
+        Optional<User> user = userRepository.findByEmail(userInfo.getEmail());
+        if(user.isEmpty()){
+            CreateUserRequest createUserRequest =
+                    CreateUserRequest.builder()
+                            .name(userInfo.getFamilyName() + " " + userInfo.getGivenName())
+                            .email(userInfo.getEmail())
+                            .password(null)
+                            .build();
+            var userResponse  = userService.createUser(createUserRequest);
+            user = Optional.of(userMapper.toUser(userResponse));
         }
+        //Convert token
+        var token = generateToken(user.get());
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .build();
     }
 
     public AuthenticationResponse authenticated(LoginRequest loginRequest) {
@@ -215,18 +231,6 @@ public class AuthenticationService {
 
 
 
-    private void validateTokenIssuedAt(FirebaseToken decodedToken, String uid) throws AppException {
-        try {
-            UserRecord user = FirebaseAuth.getInstance().getUser(uid);
-            long validSince = user.getTokensValidAfterTimestamp() / 1000;
-            long issuedAt = (long) decodedToken.getClaims().get("iat");
-            if (issuedAt < validSince) {
-                throw new AppException(ErrorCode.TOKEN_EXPIRED);
-            }
-        } catch (FirebaseException e) {
-            throw new AppException(ErrorCode.INVALID_KEY);
-        }
-    }
 
     private String generateToken(User user) {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);

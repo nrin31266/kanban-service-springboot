@@ -44,18 +44,6 @@
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
-		<!-- Firebase Admin SDK -->
-		<dependency>
-			<groupId>com.google.firebase</groupId>
-			<artifactId>firebase-admin</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
-			<version>9.2.0</version>
-		</dependency>
 
 		<!-- Lombok and MapStruct Binding -->
 		<dependency>

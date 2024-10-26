@@ -19,7 +19,8 @@ server:
   servlet:
     context-path: /identity
 
-firebase:
-  config:
-    path:
-      classpath: firebase/credentials.json
+outbound:
+  identity:
+    client-id: "427147667603-bodrqv4jh0148qag2cegph5dh7k8djbv.apps.googleusercontent.com"
+    client-secret: "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"
+    redirect-uri: "http://localhost:3004/auth/authenticate"
