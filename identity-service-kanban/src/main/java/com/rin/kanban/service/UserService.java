@@ -1,5 +1,6 @@
 package com.rin.kanban.service;
 
+import com.rin.envent.dto.NotificationEvent;
 import com.rin.kanban.dto.request.CreateUserRequest;
 import com.rin.kanban.dto.response.UserInfoResponse;
 import com.rin.kanban.dto.response.UserResponse;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.security.Security;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -36,6 +39,7 @@ public class UserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
+    KafkaTemplate<String, Object> kafkaTemplate;
 
 
     public UserResponse createUser(CreateUserRequest request) {
@@ -43,8 +47,6 @@ public class UserService {
             throw new AppException(ErrorCode.EMAIL_EXISTS);
         }
         User user = userMapper.toUser(request);
-
-
         var userRole = new HashSet<Role>();
         userRole.add(roleRepository.findById("USER")
                 .orElseThrow(()->new AppException(ErrorCode.ROLE_NOT_FOUND)));
@@ -59,8 +61,21 @@ public class UserService {
         }catch (DataIntegrityViolationException e){
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("name", user.getName());
+        NotificationEvent sendEmail = NotificationEvent.builder()
+                .body("hello")
+                .recipient(user.getEmail())
+                .param(params)
+                .subject("Verify email")
+                .channel("EMAIL")
+                .templateCode("1")
+                .build();
+        kafkaTemplate.send("notification-delivery", sendEmail);
+
         return userMapper.toUserResponse(user);
     }
+
     public UserInfoResponse getInfo(){
         var context = SecurityContextHolder.getContext();
         var userId = context.getAuthentication().getName();

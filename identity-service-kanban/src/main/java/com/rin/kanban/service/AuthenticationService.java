@@ -9,7 +9,6 @@ import com.rin.kanban.dto.request.*;
 import com.rin.kanban.dto.response.AuthenticationResponse;
 import com.rin.kanban.dto.response.RefreshTokenResponse;
 import com.rin.kanban.dto.response.IntrospectResponse;
-import com.rin.kanban.dto.response.UserInfoResponse;
 import com.rin.kanban.entity.InvalidatedToken;
 import com.rin.kanban.entity.User;
 import com.rin.kanban.exception.AppException;

@@ -33,15 +33,12 @@
 		<org.mapstruct.version>1.6.0</org.mapstruct.version>
 	</properties>
 	<dependencies>
-		<!-- Lombok and MapStruct Binding -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok-mapstruct-binding</artifactId>
 			<version>${lombok-mapstruct-binding.version}</version>
 			<scope>provided</scope>
 		</dependency>
-
-		<!-- MapStruct -->
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
