@@ -12,6 +12,7 @@ public enum ErrorCode {
     UNAUTHORIZED(10013, "You are not authorized to access this resource.", HttpStatus.UNAUTHORIZED),
     UNAUTHENTICATED(10014, "You are not authenticated.", HttpStatus.UNAUTHORIZED),
     CANNOT_SEND_EMAIL(20001, "Can't send an email.", HttpStatus.BAD_REQUEST),
+    OTP_CODE_NULL(20002, "Otp code is null.", HttpStatus.BAD_REQUEST),
     ;
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

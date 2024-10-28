@@ -4,7 +4,7 @@ server:
     context-path: /notifications
 
 app:
-  api-key: "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"
+  api-key: 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
   email: "nrin31266@gmail.com"
 
 spring:

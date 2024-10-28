@@ -33,23 +33,9 @@ public class EmailService {
     @Value("${app.email}")
     String email;
 
-    public EmailResponse sendEmail(NotificationEvent request) {
+    public EmailResponse sendEmail(EmailRequest emailRequest) {
         log.info("Sending email notification");
-        String recipientName = (String) request.getParam().getOrDefault("name", "N/A");
-        EmailRequest emailRequest = EmailRequest.builder()
-                .sender(
-                        EmailSender.builder()
-                                .email(email)
-                                .name("Nguyễn Văn Rin")
-                                .build()
-                )
-                .to(List.of(EmailRecipient.builder()
-                        .name(recipientName)
-                        .email(request.getRecipient())
-                        .build()))
-                .htmlContent(request.getBody())
-                .subject(request.getSubject())
-                .build();
+
 
         log.info(emailRequest.toString());
 
@@ -62,4 +48,30 @@ public class EmailService {
             throw new AppException(ErrorCode.CANNOT_SEND_EMAIL);
         }
     }
+
+    public EmailResponse sendOtpCode(NotificationEvent request) {
+        String recipientName = (String) request.getParam().getOrDefault("name", "N/A");
+        String otpCode = (String) request.getParam().getOrDefault("otpCode", null);
+        if(otpCode == null) {
+            log.info("OTP code is null");
+            throw new AppException(ErrorCode.CANNOT_SEND_EMAIL);
+        }
+        EmailRequest emailRequest = EmailRequest.builder()
+                .sender(
+                        EmailSender.builder()
+                                .email(email)
+                                .name("Nguyễn Văn Rin")
+                                .build()
+                )
+                .to(List.of(EmailRecipient.builder()
+                        .name(recipientName)
+                        .email(request.getRecipient())
+                        .build()))
+                .htmlContent(request.getBody() + request.getParam())
+                .subject(request.getSubject())
+                .build();
+        return sendEmail(emailRequest);
+    }
+
+
 }

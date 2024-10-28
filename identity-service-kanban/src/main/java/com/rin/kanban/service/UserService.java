@@ -12,6 +12,7 @@ import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.UserMapper;
 import com.rin.kanban.repository.RoleRepository;
 import com.rin.kanban.repository.UserRepository;
+import com.rin.kanban.utils.OtpGenerator;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -40,6 +41,7 @@ public class UserService {
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
     KafkaTemplate<String, Object> kafkaTemplate;
+    OtpGenerator otpGenerator;
 
 
     public UserResponse createUser(CreateUserRequest request) {
@@ -63,6 +65,7 @@ public class UserService {
         }
         HashMap<String, Object> params = new HashMap<>();
         params.put("name", user.getName());
+        params.put("otpCode", otpGenerator.generateOtpCode());
         NotificationEvent sendEmail = NotificationEvent.builder()
                 .body("hello")
                 .recipient(user.getEmail())
