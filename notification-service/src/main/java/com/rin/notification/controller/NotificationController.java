@@ -32,7 +32,7 @@ public class NotificationController {
         emailService.sendWelcomeEmail(request);
     }
 
-    @KafkaListener(topics = "notification-verify-otp-code-with-email")
+    @KafkaListener(topics = "notification-otp-email")
     public void listenNotificationVerifyOtpCodeWithEmail(NotificationEvent request) {
         log.info("Message received: {}", request);
         emailService.sendOtpCode(request);

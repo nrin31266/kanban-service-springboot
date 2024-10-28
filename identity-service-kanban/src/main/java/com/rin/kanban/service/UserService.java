@@ -2,14 +2,15 @@ package com.rin.kanban.service;
 
 import com.rin.envent.dto.NotificationEvent;
 import com.rin.kanban.dto.request.CreateUserRequest;
+import com.rin.kanban.dto.response.OtpResponse;
 import com.rin.kanban.dto.response.UserInfoResponse;
 import com.rin.kanban.dto.response.UserResponse;
-import com.rin.kanban.entity.Permission;
 import com.rin.kanban.entity.Role;
 import com.rin.kanban.entity.User;
 import com.rin.kanban.exception.AppException;
 import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.UserMapper;
+import com.rin.kanban.repository.OtpRepository;
 import com.rin.kanban.repository.RoleRepository;
 import com.rin.kanban.repository.UserRepository;
 import com.rin.kanban.utils.OtpGenerator;
@@ -22,11 +23,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ServerWebExchange;
 
-import java.security.Security;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +40,8 @@ public class UserService {
     RoleRepository roleRepository;
     KafkaTemplate<String, Object> kafkaTemplate;
     OtpGenerator otpGenerator;
+    OtpService otpService;
+    OtpRepository otpRepository;
 
 
     public UserResponse createUser(CreateUserRequest request) {
@@ -65,16 +65,18 @@ public class UserService {
         }
         HashMap<String, Object> params = new HashMap<>();
         params.put("name", user.getName());
-        params.put("otpCode", otpGenerator.generateOtpCode());
+        String otpCode = otpGenerator.generateOtpCode();
+        otpService.createOtp(user.getId(), otpCode);
+        params.put("OTPCode", otpCode);
         NotificationEvent sendEmail = NotificationEvent.builder()
-                .body("Hello " + user.getName() + ", this is otp code of you: ")
+                .body("Hello " + user.getName() + ", this is OTP code of you: ")
                 .recipient(user.getEmail())
                 .param(params)
                 .subject("Verify email")
                 .channel("EMAIL")
                 .templateCode("1")
                 .build();
-        kafkaTemplate.send("notification-verify-otp-code-with-email", sendEmail);
+        kafkaTemplate.send("notification-otp-email", sendEmail);
 
         return userMapper.toUserResponse(user);
     }

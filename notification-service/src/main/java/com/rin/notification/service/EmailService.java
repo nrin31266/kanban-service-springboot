@@ -60,8 +60,8 @@ public class EmailService {
 
     public EmailResponse sendOtpCode(NotificationEvent request) {
         String recipientName = (String) request.getParam().getOrDefault("name", "N/A");
-        String otpCode = (String) request.getParam().getOrDefault("otpCode", null);
-        if(otpCode == null) {
+        String OTPCode = (String) request.getParam().getOrDefault("OTPCode", null);
+        if(OTPCode == null) {
             log.info("OTP code is null");
             throw new AppException(ErrorCode.CANNOT_SEND_EMAIL);
         }
@@ -71,7 +71,7 @@ public class EmailService {
                         .name(recipientName)
                         .email(request.getRecipient())
                         .build()))
-                .htmlContent(request.getBody() + ": " + otpCode)
+                .htmlContent(request.getBody() + ": " + OTPCode)
                 .subject(request.getSubject())
                 .build();
         return sendEmail(emailRequest);

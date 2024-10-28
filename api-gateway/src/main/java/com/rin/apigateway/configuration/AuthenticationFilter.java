@@ -41,7 +41,9 @@ public class AuthenticationFilter implements GlobalFilter, Order {
             "/identity/auth/.*",  // Regex pattern matching
             "/identity/users/create",  // Public user creation endpoint
             "/identity/auth/outbound/google-login",
-            "/kanban/products/data/.*"
+            "/kanban/products/data/.*",
+            "/identity/otp/create",
+            "/identity/otp/verify"
     };
 
     @Override

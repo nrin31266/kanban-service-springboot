@@ -31,4 +31,6 @@ public class User {
     Instant updatedAt;
     @ManyToMany
     Set<Role> roles;
+    @OneToMany(mappedBy = "user")
+    Set<Otp> otp;
 }

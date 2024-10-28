@@ -18,6 +18,7 @@ public enum ErrorCode {
     INVALID_FIELD(10012, "One or more fields are invalid. Please review your input and correct any errors", HttpStatus.BAD_REQUEST),
     TOKEN_EXPIRED(10013, "The token has expired. Please obtain a new token and try again", HttpStatus.UNAUTHORIZED),
     ROLE_NOT_FOUND(10014, "Role not found. Please try again later", HttpStatus.NOT_FOUND),
+    OTP_ERROR(10015, "Otp error", HttpStatus.BAD_REQUEST),
 
     ;
 
