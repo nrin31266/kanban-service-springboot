@@ -24,6 +24,8 @@ public class User {
     String name;
     @Column(unique = true)
     String email;
+    @Column(name = "email-verified")
+    Boolean emailVerified = false;
     String password;
     @CreatedDate
     Instant createdAt;

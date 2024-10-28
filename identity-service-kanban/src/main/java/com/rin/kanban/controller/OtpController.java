@@ -18,15 +18,21 @@ public class OtpController {
     OtpService otpService;
 
     @PostMapping("/create")
-    ApiResponse<OtpResponse> createOtp(@RequestParam("userId") String userId) {
+    ApiResponse<OtpResponse> createOtp() {
         return ApiResponse.<OtpResponse>builder()
-                .result(otpService.createOtp(userId))
+                .result(otpService.createOtp())
                 .build();
     }
     @PostMapping("/verify")
     ApiResponse<VerifyOtpResponse> verifyOtp(@RequestBody VerifyOtpRequest request) {
         return ApiResponse.<VerifyOtpResponse>builder()
                 .result(otpService.verifyOtp(request))
+                .build();
+    }
+    @PostMapping("/user-verify")
+    ApiResponse<VerifyOtpResponse> userVerify(@RequestBody VerifyOtpRequest request) {
+        return ApiResponse.<VerifyOtpResponse>builder()
+                .result(otpService.userVerify(request))
                 .build();
     }
 }

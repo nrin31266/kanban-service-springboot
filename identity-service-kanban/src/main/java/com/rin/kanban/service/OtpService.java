@@ -16,6 +16,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +35,9 @@ public class OtpService {
     OtpMapper otpMapper;
     PasswordEncoder passwordEncoder;
 
-    public OtpResponse createOtp(String userId) {
+    public OtpResponse createOtp() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
         User user = userRepository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
         String otpCode = otpGenerator.generateOtpCode();
         Otp otp = Otp.builder()
@@ -64,8 +68,9 @@ public class OtpService {
     }
 
     public VerifyOtpResponse verifyOtp(VerifyOtpRequest request) {
-        User user = userRepository.findById(request.getUserId()).orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
-        Otp otp = otpRepository.findFirstByUser_IdOrderByCreatedAtDesc(request.getUserId()).orElseThrow(()->new AppException(ErrorCode.OTP_ERROR));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+        Otp otp = otpRepository.findFirstByUser_IdOrderByCreatedAtDesc(userId).orElseThrow(()->new AppException(ErrorCode.OTP_ERROR));
         log.info(otp.toString());
         boolean verified;
         String message;
@@ -87,6 +92,18 @@ public class OtpService {
             }
         }
         return new VerifyOtpResponse(verified, message);
+    }
+
+    public VerifyOtpResponse userVerify(VerifyOtpRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+        VerifyOtpResponse verifyOtpResponse = verifyOtp(request);
+        if(verifyOtpResponse.isVerified()){
+            User user = userRepository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
+            user.setEmailVerified(true);
+            userRepository.save(user);
+        }
+        return verifyOtpResponse;
     }
 
     private String encodeOtpCode(String otpCode) {
