@@ -67,14 +67,14 @@ public class UserService {
         params.put("name", user.getName());
         params.put("otpCode", otpGenerator.generateOtpCode());
         NotificationEvent sendEmail = NotificationEvent.builder()
-                .body("hello")
+                .body("Hello " + user.getName() + ", this is otp code of you: ")
                 .recipient(user.getEmail())
                 .param(params)
                 .subject("Verify email")
                 .channel("EMAIL")
                 .templateCode("1")
                 .build();
-        kafkaTemplate.send("notification-delivery", sendEmail);
+        kafkaTemplate.send("notification-verify-otp-code-with-email", sendEmail);
 
         return userMapper.toUserResponse(user);
     }

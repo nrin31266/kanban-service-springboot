@@ -32,7 +32,7 @@ public class EmailController {
         Map<String, Object> params = new HashMap<>();
         params.put("name", request.getSubject());
         return ApiResponse.<EmailResponse>builder()
-                .result(emailService.sendEmail(
+                .result(emailService.sendWelcomeEmail(
                         NotificationEvent.builder()
                                 .body(request.getBody())
                                 .subject(request.getSubject())

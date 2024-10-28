@@ -29,7 +29,13 @@ public class NotificationController {
     @KafkaListener(topics = "notification-delivery", groupId = "notification-group")
     public void listenNotificationDelivery(NotificationEvent request) {
         log.info("Message received: {}", request);
-        emailService.sendEmail(request);
+        emailService.sendWelcomeEmail(request);
+    }
+
+    @KafkaListener(topics = "notification-verify-otp-code-with-email")
+    public void listenNotificationVerifyOtpCodeWithEmail(NotificationEvent request) {
+        log.info("Message received: {}", request);
+        emailService.sendOtpCode(request);
     }
 
 }

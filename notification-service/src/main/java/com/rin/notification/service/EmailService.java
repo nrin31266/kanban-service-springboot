@@ -8,6 +8,7 @@ import com.rin.notification.dto.response.EmailResponse;
 import com.rin.notification.exception.AppException;
 import com.rin.notification.exception.ErrorCode;
 import com.rin.notification.respository.httpclient.EmailClient;
+import jakarta.annotation.PostConstruct;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -33,12 +34,20 @@ public class EmailService {
     @Value("${app.email}")
     String email;
 
+    @NonFinal
+    EmailSender emailSender;
+
+    @PostConstruct
+    public void init() {
+        emailSender = EmailSender.builder()
+                .email(email)
+                .name("Nguyễn Văn Rin")
+                .build();
+    }
+
     public EmailResponse sendEmail(EmailRequest emailRequest) {
         log.info("Sending email notification");
-
-
         log.info(emailRequest.toString());
-
         try {
             EmailResponse emailResponse = emailClient.sendEmail(apiKey, emailRequest);
             log.info("Email sent successfully");
@@ -57,17 +66,30 @@ public class EmailService {
             throw new AppException(ErrorCode.CANNOT_SEND_EMAIL);
         }
         EmailRequest emailRequest = EmailRequest.builder()
-                .sender(
-                        EmailSender.builder()
-                                .email(email)
-                                .name("Nguyễn Văn Rin")
-                                .build()
-                )
+                .sender(emailSender)
                 .to(List.of(EmailRecipient.builder()
                         .name(recipientName)
                         .email(request.getRecipient())
                         .build()))
-                .htmlContent(request.getBody() + request.getParam())
+                .htmlContent(request.getBody() + ": " + otpCode)
+                .subject(request.getSubject())
+                .build();
+        return sendEmail(emailRequest);
+    }
+
+    public EmailResponse sendWelcomeEmail(NotificationEvent request) {
+        String recipientName = (String) request.getParam().getOrDefault("name", null);
+        if(recipientName == null) {
+            log.info("Recipient name is null");
+            throw new AppException(ErrorCode.CANNOT_SEND_EMAIL);
+        }
+        EmailRequest emailRequest = EmailRequest.builder()
+                .sender(emailSender)
+                .to(List.of(EmailRecipient.builder()
+                        .name(recipientName)
+                        .email(request.getRecipient())
+                        .build()))
+                .htmlContent(request.getBody())
                 .subject(request.getSubject())
                 .build();
         return sendEmail(emailRequest);
