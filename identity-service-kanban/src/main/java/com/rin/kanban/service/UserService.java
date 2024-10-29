@@ -63,21 +63,7 @@ public class UserService {
         }catch (DataIntegrityViolationException e){
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("name", user.getName());
-        String otpCode = otpGenerator.generateOtpCode();
-        otpService.createOtp(user.getId(), otpCode);
-        params.put("OTPCode", otpCode);
-        NotificationEvent sendEmail = NotificationEvent.builder()
-                .body("Hello " + user.getName() + ", this is OTP code of you: ")
-                .recipient(user.getEmail())
-                .param(params)
-                .subject("Verify email")
-                .channel("EMAIL")
-                .templateCode("1")
-                .build();
-        kafkaTemplate.send("notification-otp-email", sendEmail);
-
+        otpService.sendEmailVerifyByUser(user);
         return userMapper.toUserResponse(user);
     }
 

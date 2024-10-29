@@ -1,5 +1,6 @@
 package com.rin.kanban.service;
 
+import com.rin.envent.dto.NotificationEvent;
 import com.rin.kanban.constant.OtpType;
 import com.rin.kanban.dto.request.VerifyOtpRequest;
 import com.rin.kanban.dto.response.OtpResponse;
@@ -16,12 +17,15 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.HashMap;
 
 @Slf4j
 @Service
@@ -34,6 +38,7 @@ public class OtpService {
     OtpGenerator otpGenerator;
     OtpMapper otpMapper;
     PasswordEncoder passwordEncoder;
+    KafkaTemplate<String, Object> kafkaTemplate;
 
     public OtpResponse createOtp() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -113,4 +118,39 @@ public class OtpService {
         return passwordEncoder.matches(otpCodeRequest, otpCode);
     }
 
+    public void sendEmailVerify() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+        User user = userRepository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
+        NotificationEvent sendEmail = createEmailVerify(user);
+        kafkaTemplate.send("notification-otp-email", sendEmail);
+    }
+
+    @PostAuthorize("hasRole('ADMIN')")
+    public void sendEmailVerifyByUserId(String userId) {
+        User user = userRepository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
+        NotificationEvent sendEmail = createEmailVerify(user);
+        kafkaTemplate.send("notification-otp-email", sendEmail);
+    }
+    //Used in service
+    public void sendEmailVerifyByUser(User user) {
+        NotificationEvent sendEmail = createEmailVerify(user);
+        kafkaTemplate.send("notification-otp-email", sendEmail);
+    }
+
+    private NotificationEvent createEmailVerify(User user){
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("name", user.getName());
+        String otpCode = otpGenerator.generateOtpCode();
+        createOtp(user.getId(), otpCode);
+        params.put("OTPCode", otpCode);
+        return NotificationEvent.builder()
+                .body("Hello " + user.getName() + ", this is OTP code of you: ")
+                .recipient(user.getEmail())
+                .param(params)
+                .subject("Verify email")
+                .channel("EMAIL")
+                .templateCode("1")
+                .build();
+    }
 }

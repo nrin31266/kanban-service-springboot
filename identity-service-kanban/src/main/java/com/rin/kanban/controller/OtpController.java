@@ -8,6 +8,8 @@ import com.rin.kanban.service.OtpService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,16 +25,26 @@ public class OtpController {
                 .result(otpService.createOtp())
                 .build();
     }
+
     @PostMapping("/verify")
     ApiResponse<VerifyOtpResponse> verifyOtp(@RequestBody VerifyOtpRequest request) {
         return ApiResponse.<VerifyOtpResponse>builder()
                 .result(otpService.verifyOtp(request))
                 .build();
     }
+
     @PostMapping("/user-verify")
     ApiResponse<VerifyOtpResponse> userVerify(@RequestBody VerifyOtpRequest request) {
         return ApiResponse.<VerifyOtpResponse>builder()
                 .result(otpService.userVerify(request))
+                .build();
+    }
+
+    @PostMapping("/send-email-verify")
+    ApiResponse reSendEmailVerify() {
+        otpService.sendEmailVerify();
+        return ApiResponse.builder()
+                .message("ok")
                 .build();
     }
 }
