@@ -17,7 +17,7 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 jwt:
-  signerKey: HDKdDVDEpABtpunTzN2QM2pbmVzDP5jht6WGykegNKgsKDVdDlbzFVmU1vDOVOHV
+  signerKey: ${SIGNER_KEY}
 
 server:
   port: 3001
@@ -26,6 +26,8 @@ server:
 
 outbound:
   identity:
-    client-id: "427147667603-bodrqv4jh0148qag2cegph5dh7k8djbv.apps.googleusercontent.com"
-    client-secret: "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"
-    redirect-uri: "http://localhost:3004/auth/authenticate"
+    client-id: ${GG_CLIENT_ID}
+    client-secret: ${GG_CLIENT_SECRET}
+    redirect-uri: ${GG_REDIRECT_URI}
+
+
