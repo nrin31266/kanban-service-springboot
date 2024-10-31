@@ -20,5 +20,6 @@ public class UserInfoResponse {
     String id;
     String name;
     String email;
+    Boolean emailVerified;
     Set<Role> roles;
 }

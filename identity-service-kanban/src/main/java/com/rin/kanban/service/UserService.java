@@ -71,7 +71,6 @@ public class UserService {
         var context = SecurityContextHolder.getContext();
         var userId = context.getAuthentication().getName();
         User user = userRepository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
-
         return userMapper.toUserInfoResponse(user);
 
     };
