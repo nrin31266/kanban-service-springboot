@@ -21,6 +21,7 @@ public class PromotionResponse {
     String code;
     DiscountType discountType;
     BigDecimal value;
+    Integer quantity;
     Instant start;
     Instant end;
     Instant created;

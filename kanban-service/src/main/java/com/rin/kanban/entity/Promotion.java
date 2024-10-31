@@ -33,6 +33,7 @@ public class Promotion {
     BigDecimal value;
     Instant start;
     Instant end;
+    Integer quantity;
     @CreatedDate
     Instant created;
     @LastModifiedDate

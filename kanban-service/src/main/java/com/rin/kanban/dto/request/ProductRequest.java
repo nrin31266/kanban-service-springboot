@@ -21,6 +21,7 @@ public class ProductRequest {
     String title;
     String description;
     String slug;
+    Integer quantity;
     String supplierId;
     String content;
     Instant expiredDate;
