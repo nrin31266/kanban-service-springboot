@@ -1,5 +1,6 @@
 package com.rin.kanban.dto.response;
 
+import com.rin.kanban.constant.DiscountType;
 import com.rin.kanban.entity.Product;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -24,6 +25,7 @@ public class SubProductResponse {
     BigDecimal quantity;
     Set<String> images;
     String productId;
+    BigDecimal discount;
     Instant createdAt;
     Instant updatedAt;
 }

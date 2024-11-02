@@ -82,6 +82,7 @@ public class SubProductService {
 
     public SubProductResponse updateSubProduct(UpdateSubProductRequest request, String subProductId) {
         SubProduct subProduct = subProductRepository.findById(subProductId).orElseThrow(() -> new AppException(ErrorCode.SUB_PRODUCT_NOT_FOUND));
+        log.info("Update sub product: {}", request.toString());
         subProductMapper.updateSubProduct(subProduct, request);
         return subProductMapper.toSubProductResponse(subProductRepository.save(subProduct));
     }

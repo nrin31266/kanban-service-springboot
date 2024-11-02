@@ -25,6 +25,8 @@ public class SubProduct {
     BigDecimal price;
     @Field(targetType = FieldType.DECIMAL128)
     BigDecimal quantity;
+    @Field(targetType = FieldType.DECIMAL128)
+    BigDecimal discount;
     Set<String> images;
     String productId;
     Boolean isDeleted = false;
@@ -32,4 +34,5 @@ public class SubProduct {
     Instant createdAt;
     @LastModifiedDate
     Instant updatedAt;
+
 }

@@ -38,5 +38,4 @@ public class Product {
 
     // This field will contain result from lookup
     List<SubProduct> subProducts;
-    List<Long> filteredSubProducts;
 }

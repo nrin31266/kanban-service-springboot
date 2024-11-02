@@ -115,6 +115,7 @@ public class CategoryService {
                 .data(pageData.getContent().stream().map(categoryMapper::toCategoryResponse).toList())
                 .build();
     }
+
     @Transactional
     public Boolean deleteCategory(String categoryId) {
         try {
@@ -132,7 +133,6 @@ public class CategoryService {
             return false;
         }
     }
-
 
 
     public CategoryResponse updateCategory(CategoryRequest request, String categoryId) {

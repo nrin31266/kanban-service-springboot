@@ -46,10 +46,10 @@ public class ProductService {
 
     public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = productMapper.toProduct(productRequest);
-        Set<String> categoryIdsConfirmed = new HashSet<>();
-        productRequest.getCategoryIds().forEach((categoryId -> {
-            categoryIdsConfirmed.add(categoryRepository.findById(categoryId).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND)).getId());
-        }));
+        Set<String> categoryIdsConfirmed = productRequest.getCategoryIds().stream()
+                .map(categoryId -> categoryRepository.findById(categoryId)
+                        .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND)).getId())
+                .collect(Collectors.toSet());
         product.setCategoryIds(categoryIdsConfirmed);
         return productMapper.toProductResponse(productRepository.save(product));
     }
@@ -133,12 +133,11 @@ public class ProductService {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         productMapper.updateProduct(product, productRequest);
         if (productRequest.getCategoryIds() != null) {
-            Set<String> categoryIdConfirm = new HashSet<>();
-            productRequest.getCategoryIds().forEach((categoryId -> {
-                Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
-                categoryIdConfirm.add(category.getId());
-            }));
-            product.setCategoryIds(categoryIdConfirm);
+            Set<String> categoryIdsConfirmed = productRequest.getCategoryIds().stream()
+                    .map(categoryId -> categoryRepository.findById(categoryId)
+                            .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND)).getId())
+                    .collect(Collectors.toSet());
+            product.setCategoryIds(categoryIdsConfirmed);
         }
         return productMapper.toProductResponse(productRepository.save(product));
     }

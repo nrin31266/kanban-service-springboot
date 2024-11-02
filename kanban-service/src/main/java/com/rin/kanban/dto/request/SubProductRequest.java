@@ -20,6 +20,7 @@ public class SubProductRequest {
     String size;
     String color;
     BigDecimal price;
+    BigDecimal discount;
     BigDecimal quantity;
     String productId;
     Set<String> images;

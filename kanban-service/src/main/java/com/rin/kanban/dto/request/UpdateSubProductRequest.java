@@ -16,6 +16,7 @@ public class UpdateSubProductRequest {
     String color;
     BigDecimal price;
     BigDecimal quantity;
+    BigDecimal discount;
     String productId;
     Set<String> images;
 }

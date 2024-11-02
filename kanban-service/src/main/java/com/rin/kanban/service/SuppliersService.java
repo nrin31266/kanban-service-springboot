@@ -45,7 +45,6 @@ public class SuppliersService {
     }
 
 
-
     public SupplierResponse updateSuppliers(SupplierRequest request, String supplierId) {
         Supplier supplier = suppliersRepository.findById(supplierId)
                 .orElseThrow(() -> new AppException(ErrorCode.SUPPLIERS_NOT_FOUND));
@@ -74,6 +73,7 @@ public class SuppliersService {
                 .formItems(itemsData.getGetFormItems())
                 .build();
     }
+
     public PageResponse<SupplierResponse> getSuppliersWithPageAndSize(int page, int size) {
         Sort sort = Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(page - 1, size, sort);
@@ -89,7 +89,7 @@ public class SuppliersService {
     }
 
     public PageResponse<SupplierResponse> getAll() {
-        List<SupplierResponse> suppliers= suppliersRepository.findAll().stream().map(supplierMapper::toSupplierResponse).toList();
+        List<SupplierResponse> suppliers = suppliersRepository.findAll().stream().map(supplierMapper::toSupplierResponse).toList();
         return PageResponse.<SupplierResponse>builder()
                 .totalPages(1)
                 .currentPage(1)
