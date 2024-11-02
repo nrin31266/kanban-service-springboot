@@ -3,6 +3,7 @@ package com.rin.kanban.controller;
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.CreatePromotionRequest;
+import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.request.UpdatePromotionRequest;
 import com.rin.kanban.dto.response.PromotionResponse;
 import com.rin.kanban.service.PromotionService;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -44,12 +47,20 @@ public class PromotionController {
                 .result(promotionService.updatePromotion(updatePromotionRequest, promotionId))
                 .build();
     }
-    @PutMapping("/{promotionId}")
+    @PutMapping("/soft-delete/{promotionId}")
     public ApiResponse<PromotionResponse> softDeletePromotion(
             @PathVariable("promotionId") String promotionId
     ){
         return ApiResponse.<PromotionResponse>builder()
                 .result(promotionService.softDeletePromotion(promotionId))
+                .build();
+    }
+    @PutMapping("/soft-delete")
+    public ApiResponse<List<PromotionResponse>> softDeletePromotions(
+            @RequestBody SoftDeleteRequest request
+            ){
+        return ApiResponse.<List<PromotionResponse>>builder()
+                .result(promotionService.softDeletePromotions(request))
                 .build();
     }
 }
