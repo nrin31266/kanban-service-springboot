@@ -39,5 +39,6 @@
         @LastModifiedDate
         Instant modified;
         String imageUrl;
+        @Builder.Default
         Boolean isDeleted=false;
     }

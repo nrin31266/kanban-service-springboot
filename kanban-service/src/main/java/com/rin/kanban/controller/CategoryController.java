@@ -34,6 +34,7 @@ public class CategoryController {
                 .result(categoryService.getAllCategoriesTree())
                 .build();
     }
+
     @GetMapping("/table-data")
     public ApiResponse<List<CategoryTableResponse>> getCategoriesTableData() {
         return ApiResponse.<List<CategoryTableResponse>>builder()
@@ -44,25 +45,12 @@ public class CategoryController {
 
     @GetMapping
     public ApiResponse<PageResponse<CategoryResponse>> getAllCategories(
-            @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "size", required = false) Integer size) {
-        if (page != null && size != null) {
-            return ApiResponse.<PageResponse<CategoryResponse>>builder()
-                    .result(categoryService.getCategoriesByPageAndSize(page, size))
-                    .build();
-        }
-        List<CategoryResponse> categories = categoryService.getAllCategories();
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size) {
         return ApiResponse.<PageResponse<CategoryResponse>>builder()
-                .result(
-                        PageResponse.<CategoryResponse>builder()
-                                .totalPages(1)
-                                .currentPage(1)
-                                .totalPages(categories.size())
-                                .pageSize(categories.size())
-                                .data(categories)
-                                .build()
-                )
+                .result(categoryService.getCategoriesByPageAndSize(page, size))
                 .build();
+
     }
 
     @DeleteMapping("/{categoryId}")

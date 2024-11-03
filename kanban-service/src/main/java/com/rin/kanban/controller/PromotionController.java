@@ -31,8 +31,8 @@ public class PromotionController {
     }
     @GetMapping
     public ApiResponse<PageResponse<PromotionResponse>> getPromotions(
-            @RequestParam("page") Integer page,
-            @RequestParam("size") Integer size
+            @RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "size", defaultValue = "10") Integer size
     ) {
         return ApiResponse.<PageResponse<PromotionResponse>>builder()
                 .result(promotionService.getPromotions(page, size))

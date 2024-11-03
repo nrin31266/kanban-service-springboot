@@ -36,12 +36,18 @@ public class AuthenticationFilter implements GlobalFilter, Order {
     ObjectMapper objectMapper;
 
     // List of public endpoints that don't require authentication
-    @NonFinal
-    private String[] publicEndpoint = {
+
+    private final String[] publicEndpoint = {
             "/identity/auth/.*",  // Regex pattern matching
             "/identity/users/create",  // Public user creation endpoint
             "/identity/auth/outbound/google-login",
-            "/kanban/products/data/.*",
+    };
+
+    private final String[] publicGetEndpoints = {
+            "/kanban/products",
+            "/kanban/categories",
+            "/kanban/sub-products",
+            "/kanban/promotions",
     };
 
     @Override
@@ -58,8 +64,10 @@ public class AuthenticationFilter implements GlobalFilter, Order {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         log.info("Authentication Filter...");
 
+        String httpMethod = exchange.getRequest().getMethod().name();
+
         // Skip authentication if the request is for a public endpoint
-        if (isPublicEndpoint(exchange.getRequest())){
+        if (isPublicEndpoint(exchange.getRequest(), httpMethod)){
             log.info("Public Endpoint");
             return chain.filter(exchange);// Continue the request without authentication
         }
@@ -114,9 +122,12 @@ public class AuthenticationFilter implements GlobalFilter, Order {
 
 
     // Check if the request URI matches any public endpoint pattern
-    private boolean isPublicEndpoint(ServerHttpRequest request) {
+    private boolean isPublicEndpoint(ServerHttpRequest request, String httpMethod) {
         log.info("Path: {}", request.getURI().getPath());
         // Stream through publicEndpoint array to match request path
+        if ("GET".equalsIgnoreCase(httpMethod)) {
+            return Arrays.stream(publicGetEndpoints).anyMatch(s -> request.getURI().getPath().matches(s));
+        }
         return Arrays.stream(publicEndpoint).anyMatch(s -> request.getURI().getPath().matches(s));
     }
 
