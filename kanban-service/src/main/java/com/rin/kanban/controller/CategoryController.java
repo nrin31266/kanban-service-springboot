@@ -52,6 +52,12 @@ public class CategoryController {
                 .build();
 
     }
+    @GetMapping("/root")
+    public ApiResponse<List<CategoryResponse>> getRootCategory() {
+        return ApiResponse.<List<CategoryResponse>>builder()
+                .result(categoryService.getRootCategories())
+                .build();
+    }
 
     @DeleteMapping("/{categoryId}")
     public ApiResponse<Boolean> deleteCategory(@PathVariable("categoryId") String categoryId) {

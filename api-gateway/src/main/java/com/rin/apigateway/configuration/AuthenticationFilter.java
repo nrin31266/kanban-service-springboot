@@ -48,6 +48,7 @@ public class AuthenticationFilter implements GlobalFilter, Order {
             "/kanban/categories",
             "/kanban/sub-products",
             "/kanban/promotions",
+            "/kanban/categories/root"
     };
 
     @Override

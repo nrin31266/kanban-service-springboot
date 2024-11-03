@@ -116,6 +116,10 @@ public class CategoryService {
                 .build();
     }
 
+    public List<CategoryResponse> getRootCategories() {
+        return categoryRepository.findAllRootCategories().stream().map(categoryMapper::toCategoryResponse).toList();
+    }
+
     @Transactional
     public Boolean deleteCategory(String categoryId) {
         try {
