@@ -27,7 +27,6 @@
         String name;
         String description;
         String code;
-        //Enum
         DiscountType discountType;
         @Field(targetType = FieldType.DECIMAL128)
         BigDecimal value;
@@ -35,9 +34,9 @@
         Instant end;
         Integer quantity;
         @CreatedDate
-        Instant created;
+        Instant createdAt;
         @LastModifiedDate
-        Instant modified;
+        Instant updatedAt;
         String imageUrl;
         @Builder.Default
         Boolean isDeleted=false;

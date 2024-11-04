@@ -87,7 +87,7 @@ public class ProductService {
     public PageResponse<ProductHasSubProductsResponse> getProductsWithPageAndSize(int page, int size) {
         Sort sort = Sort.by("updatedAt").descending();
         Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Product> pageData = productRepository.findAllByIsDeletedIsNullOrFalse(pageable);
+        Page<Product> pageData = productRepository.findAllProducts(pageable);
 
         return getSubProductsByPage(pageData);
     }
@@ -157,5 +157,14 @@ public class ProductService {
         Page<Product> productPage = productCustomRepository.findAllByFilterValues(request);
         log.info(productPage.getContent().toString());
         return getSubProductsByPage(productPage);
+    }
+
+    public List<ProductResponse> getBestsellerProducts() {
+        //
+        Sort sort = Sort.by("updatedAt").descending();
+        Pageable pageable = PageRequest.of(0, 10, sort);
+        Page<Product> pageData = productRepository.findAllProducts(pageable);
+
+        return pageData.getContent().stream().map(productMapper::toProductResponse).collect(Collectors.toList());
     }
 }

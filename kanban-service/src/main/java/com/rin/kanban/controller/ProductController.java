@@ -113,4 +113,11 @@ public class ProductController {
                 .build();
 
     }
+
+    @GetMapping("/bestseller")
+    public ApiResponse<List<ProductResponse>> getBestSellerProducts() {
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productService.getBestsellerProducts())
+                .build();
+    }
 }
