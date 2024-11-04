@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryRequest {
     String name;
+    String imageUrl;
     String parentId;
     String description;
     String slug;

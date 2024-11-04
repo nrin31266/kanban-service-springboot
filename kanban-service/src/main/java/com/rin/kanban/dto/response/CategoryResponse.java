@@ -15,6 +15,7 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryResponse {
     String id;
+    String imageUrl;
     String name;
     String description;
     String slug;

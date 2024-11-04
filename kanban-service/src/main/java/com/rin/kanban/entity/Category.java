@@ -20,6 +20,7 @@ public class Category {
     String id;
     String name;
     String parentId;
+    String imageUrl;
     String description;
     String slug;
     Boolean isDeleted = false;

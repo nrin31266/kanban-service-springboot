@@ -38,9 +38,6 @@ public class CategoryService {
     ProductMapper productMapper;
 
     public CategoryResponse addCategory(CategoryRequest request) {
-        if (categoryRepository.findByParentIdAndSlug(request.getParentId(), request.getSlug()).isPresent()) {
-            throw new AppException(ErrorCode.CATEGORY_EXISTED);
-        }
         return categoryMapper.toCategoryResponse(categoryRepository.save(categoryMapper.toCategory(request)));
     }
 
@@ -53,22 +50,23 @@ public class CategoryService {
         List<Category> categories = categoryRepository.findAll(sort);
         Map<String, CategoryTreeResponse> map = new HashMap<>();
         for (Category category : categories) {
-            CategoryTreeResponse response = CategoryTreeResponse.builder()
-                    .value(category.getId())
-                    .title(category.getName())
-                    .build();
-            map.put(category.getId(), response);
+            map.put(category.getId(),
+                    CategoryTreeResponse.builder()
+                            .value(category.getId())
+                            .title(category.getName())
+                            .build());
         }
         List<CategoryTreeResponse> categoriesTree = new ArrayList<>();
         for (Category category : categories) {
+            CategoryTreeResponse item = map.get(category.getId());
             if (category.getParentId() == null) {
-                categoriesTree.add(map.get(category.getId()));
+                categoriesTree.add(item);
             } else {
                 CategoryTreeResponse parent = map.get(category.getParentId());
-                CategoryTreeResponse item = map.get(category.getId());
-                if (parent.getChildren() == null) {
-                    parent.setChildren(new ArrayList<>(Collections.singletonList(item)));
-                } else {
+                if (parent != null) {
+                    if (parent.getChildren() == null) {
+                        parent.setChildren(new ArrayList<>());
+                    }
                     parent.getChildren().add(item);
                 }
             }
@@ -87,14 +85,15 @@ public class CategoryService {
         });
         List<CategoryTableResponse> categoriesTable = new ArrayList<>();
         categories.forEach(category -> {
+            CategoryTableResponse item = map.get(category.getId());
             if (category.getParentId() == null) {
-                categoriesTable.add(map.get(category.getId()));
+                categoriesTable.add(item);
             } else {
                 CategoryTableResponse parent = map.get(category.getParentId());
-                CategoryTableResponse item = map.get(category.getId());
-                if (parent.getChildren() == null) {
-                    parent.setChildren(new ArrayList<>(Collections.singletonList(item)));
-                } else {
+                if (parent != null) {
+                    if (parent.getChildren() == null) {
+                        parent.setChildren(new ArrayList<>());
+                    }
                     parent.getChildren().add(item);
                 }
             }

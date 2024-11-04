@@ -41,8 +41,6 @@ public class CategoryController {
                 .result(categoryService.getCategoriesTableData())
                 .build();
     }
-
-
     @GetMapping
     public ApiResponse<PageResponse<CategoryResponse>> getAllCategories(
             @RequestParam(value = "page", defaultValue = "1") Integer page,
