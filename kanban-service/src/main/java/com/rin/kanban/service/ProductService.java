@@ -18,6 +18,7 @@ import com.rin.kanban.repository.CategoryRepository;
 import com.rin.kanban.repository.ProductRepository;
 import com.rin.kanban.repository.SubProductRepository;
 import com.rin.kanban.repository.custom.ProductCustomRepository;
+import com.rin.kanban.repository.custom.SubProductCustomRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -29,6 +30,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +45,7 @@ public class ProductService {
     SubProductRepository subProductRepository;
     SubProductMapper subProductMapper;
     ProductCustomRepository productCustomRepository;
+    SubProductCustomRepository subProductCustomRepository;
 
     public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = productMapper.toProduct(productRequest);
@@ -85,7 +88,7 @@ public class ProductService {
 //    }
 
     public PageResponse<ProductHasSubProductsResponse> getProductsWithPageAndSize(int page, int size) {
-        Sort sort = Sort.by("updatedAt").descending();
+        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         Pageable pageable = PageRequest.of(page - 1, size, sort);
         Page<Product> pageData = productRepository.findAllProducts(pageable);
 
@@ -94,7 +97,7 @@ public class ProductService {
 
     public PageResponse<ProductHasSubProductsResponse> getProductsWithPageAndSizeAndTitle(int page, int size, String title) {
         log.info(title);
-        Sort sort = Sort.by("updatedAt").descending();
+        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         Pageable pageable = PageRequest.of(page - 1, size, sort);
         Page<Product> pageData = productRepository.findAllBySlugContaining(title, pageable);
 
@@ -161,10 +164,17 @@ public class ProductService {
 
     public List<ProductResponse> getBestsellerProducts() {
         //
-        Sort sort = Sort.by("updatedAt").descending();
+        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         Pageable pageable = PageRequest.of(0, 10, sort);
         Page<Product> pageData = productRepository.findAllProducts(pageable);
-
-        return pageData.getContent().stream().map(productMapper::toProductResponse).collect(Collectors.toList());
+        return pageData.getContent().stream().map((product)->{
+            ProductResponse productResponse = productMapper.toProductResponse(product);
+            Optional<SubProduct> maxPriceSubProduct = subProductCustomRepository.findMaxPriceSubProduct(product.getId());
+            maxPriceSubProduct.ifPresent(subProduct -> productResponse.setMaxPrice(subProduct.getPrice()));
+            Optional<SubProduct> minPriceSubProduct = subProductCustomRepository.findMinPriceSubProduct(product.getId());
+            minPriceSubProduct.ifPresent(subProduct -> productResponse.setMinPrice(subProduct.getPrice()));
+            return productResponse;
+        }).collect(Collectors.toList());
     }
+
 }

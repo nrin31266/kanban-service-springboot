@@ -33,6 +33,7 @@ public class PromotionService {
     PromotionRepository promotionRepository;
     PromotionMapper promotionMapper;
 
+
     public PromotionResponse createPromotion(CreatePromotionRequest request) {
         if (promotionRepository.findByCode(request.getCode()).isPresent()) {
             throw new AppException(ErrorCode.PROMOTION_EXISTED);
@@ -79,7 +80,7 @@ public class PromotionService {
                 .totalElements(pageData.getTotalElements())
                 .totalPages(pageData.getTotalPages())
                 .currentPage(page)
-                .pageSize(size)
+                .pageSize(pageData.getNumberOfElements())
                 .data(promotionsResponse)
                 .build();
     }

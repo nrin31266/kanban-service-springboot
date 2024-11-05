@@ -1,8 +1,10 @@
 package com.rin.kanban.service;
 
+import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.request.SubProductRequest;
 import com.rin.kanban.dto.request.UpdateSubProductRequest;
+import com.rin.kanban.dto.response.PromotionResponse;
 import com.rin.kanban.dto.response.SelectDataResponse;
 import com.rin.kanban.dto.response.SubProductResponse;
 import com.rin.kanban.entity.Product;
@@ -16,6 +18,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,6 +91,20 @@ public class SubProductService {
         log.info("Update sub product: {}", request.toString());
         subProductMapper.updateSubProduct(subProduct, request);
         return subProductMapper.toSubProductResponse(subProductRepository.save(subProduct));
+    }
+
+    public PageResponse<SubProductResponse> getSubProducts(int page, int size) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<SubProduct> pageData = subProductRepository.findSubProducts(pageable);
+
+        return PageResponse.<SubProductResponse>builder()
+                .totalElements(pageData.getTotalElements())
+                .totalPages(pageData.getTotalPages())
+                .currentPage(page)
+                .pageSize(pageData.getNumberOfElements())
+                .data(pageData.getContent().stream().map(subProductMapper::toSubProductResponse).toList())
+                .build();
     }
 
 }

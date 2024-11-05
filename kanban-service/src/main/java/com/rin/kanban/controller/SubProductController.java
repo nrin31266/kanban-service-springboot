@@ -1,6 +1,7 @@
 package com.rin.kanban.controller;
 
 import com.rin.kanban.dto.ApiResponse;
+import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.request.SubProductRequest;
 import com.rin.kanban.dto.request.UpdateSubProductRequest;
@@ -11,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +43,13 @@ public class SubProductController {
                 .result(subProductService.getSubProductsByProductId(productId))
                 .build();
     }
+    @GetMapping
+    public ApiResponse<PageResponse<SubProductResponse>> getSubProducts(@RequestParam(name = "page", defaultValue = "1") int page, @RequestParam(name = "size", defaultValue = "10") int size) {
+        return ApiResponse.<PageResponse<SubProductResponse>>builder()
+                .result(subProductService.getSubProducts(page, size))
+                .build();
+    }
+
     @PutMapping("/soft-delete")
     public ApiResponse<List<SubProductResponse>> softDeleteSubProduct(@RequestBody SoftDeleteRequest subProductRequest) {
         return ApiResponse.<List<SubProductResponse>>builder()

@@ -1,5 +1,6 @@
 package com.rin.kanban.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.rin.kanban.entity.Category;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Set;
 
@@ -30,4 +32,8 @@ public class ProductResponse {
     Instant createdAt;
     Instant updatedAt;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    BigDecimal maxPrice;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    BigDecimal minPrice;
 }

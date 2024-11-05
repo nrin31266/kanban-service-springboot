@@ -11,5 +11,4 @@ import java.util.List;
 
 public interface ProductCustomRepository {
     Page<Product> findAllByFilterValues(ProductsFilterValuesRequest productsFilterValuesRequest);
-
 }

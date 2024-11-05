@@ -23,7 +23,9 @@ public class SecurityConfig {
             "/sub-products",
             "/promotions",
             "/categories/root",
-            "/products/bestseller"
+            "/products/bestseller",
+            "/products/*",
+            "/sub-products/product-detail/*"
     };
 
     CustomJwtDecoder customJwtDecoder;
