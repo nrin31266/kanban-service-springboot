@@ -76,16 +76,6 @@ public class ProductService {
         List<Product> products = productRepository.findAll();
         return products.stream().map(productMapper::toProductResponse).collect(Collectors.toList());
     }
-//    public List<ProductHasSubProductsResponse> getProductsData() {
-//        List<Product> products = productRepository.findAllByIsDeletedIsNullOrIsDeletedIsFalse();
-//        return products.parallelStream().map(product -> {
-//            ProductHasSubProductsResponse response = productMapper.toProductHasSubProductsResponse(product);
-//            List<SubProduct> subProducts = subProductRepository.findByProductId(product.getId());
-//            if (!subProducts.isEmpty())
-//                response.setSubProductResponse(subProducts.stream().map(subProductMapper::toSubProductResponse).toList());
-//            return response;
-//        }).collect(Collectors.toList());
-//    }
 
     public PageResponse<ProductHasSubProductsResponse> getProductsWithPageAndSize(int page, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
@@ -150,7 +140,7 @@ public class ProductService {
         List<Product> productsToDelete = new ArrayList<>();
         for (String productId : request.getIds()) {
             Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-            product.setIsDeleted(true);
+            product.setDeleted(true);
             productsToDelete.add(product);
         }
         productRepository.saveAll(productsToDelete);

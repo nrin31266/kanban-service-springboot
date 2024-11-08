@@ -1,8 +1,6 @@
 package com.rin.kanban.service;
 
-import com.rin.kanban.data.form.SupplierFormItems;
 import com.rin.kanban.dto.PageResponse;
-import com.rin.kanban.data.form.FormModel;
 import com.rin.kanban.dto.request.ExportDataRequest;
 import com.rin.kanban.dto.request.SupplierRequest;
 import com.rin.kanban.dto.response.ExportSupplierDataResponse;
@@ -35,12 +33,14 @@ public class SuppliersService {
 
     SuppliersMapper supplierMapper;
     SuppliersRepository suppliersRepository;
-    CategoryRepository categoryRepository;
     SuppliersCustomRepository suppliersCustomRepository;
 
     public SupplierResponse create(SupplierRequest request) {
+        if(suppliersRepository.findByName(request.getName()).isPresent()){
+            throw new AppException(ErrorCode.SUPPLIERS_EXISTS);
+        }
         Supplier supplier = supplierMapper.toSupplier(request);
-        //
+
         return supplierMapper.toSupplierResponse(suppliersRepository.save(supplier));
     }
 
@@ -48,7 +48,9 @@ public class SuppliersService {
     public SupplierResponse updateSuppliers(SupplierRequest request, String supplierId) {
         Supplier supplier = suppliersRepository.findById(supplierId)
                 .orElseThrow(() -> new AppException(ErrorCode.SUPPLIERS_NOT_FOUND));
-
+        if(suppliersRepository.findByName(request.getName()).isPresent()){
+            throw new AppException(ErrorCode.SUPPLIERS_EXISTS);
+        }
         supplierMapper.supplierUpdate(supplier, request);
 
         return supplierMapper.toSupplierResponse(suppliersRepository.save(supplier));
@@ -63,16 +65,7 @@ public class SuppliersService {
         }
     }
 
-    public FormModel getForm() {
-        SupplierFormItems itemsData = new SupplierFormItems();
-        return FormModel.builder()
-                .title("Suppliers")
-                .layout("horizontal")
-                .labelCol(8)
-                .wrapperCol(16)
-                .formItems(itemsData.getGetFormItems())
-                .build();
-    }
+
 
     public PageResponse<SupplierResponse> getSuppliersWithPageAndSize(int page, int size) {
         Sort sort = Sort.by("createdAt").descending();
@@ -88,16 +81,6 @@ public class SuppliersService {
                 .build();
     }
 
-    public PageResponse<SupplierResponse> getAll() {
-        List<SupplierResponse> suppliers = suppliersRepository.findAll().stream().map(supplierMapper::toSupplierResponse).toList();
-        return PageResponse.<SupplierResponse>builder()
-                .totalPages(1)
-                .currentPage(1)
-                .pageSize(suppliers.size())
-                .totalElements(suppliers.size())
-                .data(suppliers)
-                .build();
-    }
 
     public List<ExportSupplierDataResponse> exportSuppliersData(Instant start, Instant end, ExportDataRequest request) {
         return suppliersCustomRepository.findSuppliersByFieldsAndDateRange(request.getCheckedValue(), start, end);

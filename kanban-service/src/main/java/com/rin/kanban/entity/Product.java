@@ -29,7 +29,7 @@ public class Product {
     String content=null;
     Instant expiredDate = null;
     String[] images;
-    Boolean isDeleted = false;
+    boolean isDeleted = false;
     Set<String> categoryIds;
     @CreatedDate
     Instant createdAt;

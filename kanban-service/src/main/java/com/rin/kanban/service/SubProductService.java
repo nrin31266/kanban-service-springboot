@@ -80,7 +80,7 @@ public class SubProductService {
 
         for (String productId : request.getIds()) {
             SubProduct subProduct = subProductRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-            subProduct.setIsDeleted(true);
+            subProduct.setDeleted(true);
             subProductsToDelete.add(subProduct);
         }
         return subProductRepository.saveAll(subProductsToDelete).stream().map(subProductMapper::toSubProductResponse).collect(Collectors.toList());

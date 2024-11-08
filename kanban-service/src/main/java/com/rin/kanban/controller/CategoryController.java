@@ -5,7 +5,7 @@ import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.CategoryRequest;
 import com.rin.kanban.dto.response.CategoryResponse;
 import com.rin.kanban.dto.response.CategoryTableResponse;
-import com.rin.kanban.dto.response.CategoryTreeResponse;
+import com.rin.kanban.dto.response.SelectCategoryTreeResponse;
 import com.rin.kanban.service.CategoryService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +29,8 @@ public class CategoryController {
     }
 
     @GetMapping("/get-tree")
-    public ApiResponse<List<CategoryTreeResponse>> getCategories() {
-        return ApiResponse.<List<CategoryTreeResponse>>builder()
+    public ApiResponse<List<SelectCategoryTreeResponse>> getCategories() {
+        return ApiResponse.<List<SelectCategoryTreeResponse>>builder()
                 .result(categoryService.getAllCategoriesTree())
                 .build();
     }

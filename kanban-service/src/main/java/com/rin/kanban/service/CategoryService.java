@@ -4,9 +4,8 @@ import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.CategoryRequest;
 import com.rin.kanban.dto.response.CategoryResponse;
 import com.rin.kanban.dto.response.CategoryTableResponse;
-import com.rin.kanban.dto.response.CategoryTreeResponse;
+import com.rin.kanban.dto.response.SelectCategoryTreeResponse;
 import com.rin.kanban.entity.Category;
-import com.rin.kanban.entity.Product;
 import com.rin.kanban.exception.AppException;
 import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.CategoryMapper;
@@ -41,28 +40,24 @@ public class CategoryService {
         return categoryMapper.toCategoryResponse(categoryRepository.save(categoryMapper.toCategory(request)));
     }
 
-    public List<CategoryResponse> getAllCategories() {
-        return categoryRepository.findAll().stream().map(categoryMapper::toCategoryResponse).toList();
-    }
-
-    public List<CategoryTreeResponse> getAllCategoriesTree() {
+    public List<SelectCategoryTreeResponse> getAllCategoriesTree() {
         Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         List<Category> categories = categoryRepository.findAll(sort);
-        Map<String, CategoryTreeResponse> map = new HashMap<>();
+        Map<String, SelectCategoryTreeResponse> map = new HashMap<>();
         for (Category category : categories) {
             map.put(category.getId(),
-                    CategoryTreeResponse.builder()
+                    SelectCategoryTreeResponse.builder()
                             .value(category.getId())
                             .title(category.getName())
                             .build());
         }
-        List<CategoryTreeResponse> categoriesTree = new ArrayList<>();
+        List<SelectCategoryTreeResponse> categoriesTree = new ArrayList<>();
         for (Category category : categories) {
-            CategoryTreeResponse item = map.get(category.getId());
+            SelectCategoryTreeResponse item = map.get(category.getId());
             if (category.getParentId() == null) {
                 categoriesTree.add(item);
             } else {
-                CategoryTreeResponse parent = map.get(category.getParentId());
+                SelectCategoryTreeResponse parent = map.get(category.getParentId());
                 if (parent != null) {
                     if (parent.getChildren() == null) {
                         parent.setChildren(new ArrayList<>());
@@ -105,7 +100,6 @@ public class CategoryService {
         Sort sort = Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(page - 1, size, sort);
         Page<Category> pageData = categoryRepository.findAll(pageable);
-
         return PageResponse.<CategoryResponse>builder()
                 .currentPage(pageData.getNumber() + 1)
                 .totalPages(pageData.getTotalPages())
@@ -136,7 +130,6 @@ public class CategoryService {
             return false;
         }
     }
-
 
     public CategoryResponse updateCategory(CategoryRequest request, String categoryId) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));

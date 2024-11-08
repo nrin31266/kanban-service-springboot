@@ -1,15 +1,11 @@
 package com.rin.kanban.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.rin.kanban.entity.Category;
-import jakarta.validation.constraints.Email;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Set;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,16 +13,11 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SupplierResponse {
     String id;
-    int onTheWay;
-    String email;
+    String name;
     String photoUrl;
     String slug;
-    String name;
-    String product;
-    Set<Category> categories;
-    BigDecimal price;
-    String contact;
-    boolean talking;
+    String contactPerson;
+    String email;
     Instant createdAt;
     Instant updatedAt;
 }

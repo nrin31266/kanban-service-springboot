@@ -1,6 +1,7 @@
 package com.rin.kanban.entity;
 
 
+import com.rin.kanban.constant.SupplierStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
@@ -23,17 +24,13 @@ import java.util.Set;
 public class Supplier {
     @MongoId
     String id;
+    @Indexed(unique = true)
+    String name;
     String photoUrl;
     String slug;
-    String name;
-    String product;
-    Set<String> categoryIds;
-    BigDecimal price;
-    String contact;
-    Boolean talking;
-    Integer onTheWay;
+    String contactPerson;
     String email;
-    Boolean isDeleted = false;
+    boolean isDeleted = false;
     @CreatedDate
     Instant createdAt;
     @LastModifiedDate

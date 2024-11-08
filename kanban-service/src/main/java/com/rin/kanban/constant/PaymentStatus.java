@@ -1,4 +1,4 @@
 package com.rin.kanban.constant;
 
-public class PaymentStatus {
+public enum PaymentStatus {
 }

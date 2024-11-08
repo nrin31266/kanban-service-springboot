@@ -29,7 +29,7 @@ public class SubProduct {
     BigDecimal discount;
     Set<String> images;
     String productId;
-    Boolean isDeleted = false;
+    boolean isDeleted = false;
     @CreatedDate
     Instant createdAt;
     @LastModifiedDate

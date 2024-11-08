@@ -17,6 +17,7 @@ public class CategoryTableResponse {
     String name;
     String description;
     String slug;
+    String imageUrl;
     String parentId;
     Instant createdAt;
     Instant updatedAt;

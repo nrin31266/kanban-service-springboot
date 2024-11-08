@@ -12,9 +12,9 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 
-public class CategoryTreeResponse {
+public class SelectCategoryTreeResponse {
     String value;
     String title;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
-    List<CategoryTreeResponse> children;
+    List<SelectCategoryTreeResponse> children;
 }

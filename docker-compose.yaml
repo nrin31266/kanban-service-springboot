@@ -50,6 +50,16 @@ services:
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
     networks:
       - kanban-network
+  mysqladmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: mysqladmin-kanban
+    ports:
+      - "8001:80"
+    networks:
+      - kanban-network
+    environment:
+      - PMA_HOST=mysql
+      - PMA_POST=3306
 
 
 volumes:

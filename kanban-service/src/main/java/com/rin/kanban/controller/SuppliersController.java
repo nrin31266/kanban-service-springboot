@@ -2,7 +2,6 @@ package com.rin.kanban.controller;
 
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.PageResponse;
-import com.rin.kanban.data.form.FormModel;
 import com.rin.kanban.dto.request.ExportDataRequest;
 import com.rin.kanban.dto.request.SupplierRequest;
 import com.rin.kanban.dto.response.ExportSupplierDataResponse;
@@ -28,7 +27,7 @@ import java.util.List;
 public class SuppliersController {
     SuppliersService suppliersService;
 
-    @PostMapping("/create")
+    @PostMapping
     public ApiResponse<SupplierResponse> create(@RequestBody @Validated SupplierRequest request) {
         return ApiResponse.<SupplierResponse>builder()
                 .result(suppliersService.create(request))
@@ -49,16 +48,11 @@ public class SuppliersController {
 
     @GetMapping
     public ApiResponse<PageResponse<SupplierResponse>> getAll(
-            @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "size", required = false) Integer size
+            @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size
     ) {
-        if (page != null && size != null) {
-            return ApiResponse.<PageResponse<SupplierResponse>>builder()
-                    .result(suppliersService.getSuppliersWithPageAndSize(page, size))
-                    .build();
-        }
         return ApiResponse.<PageResponse<SupplierResponse>>builder()
-                .result(suppliersService.getAll())
+                .result(suppliersService.getSuppliersWithPageAndSize(page, size))
                 .build();
     }
 
@@ -73,9 +67,9 @@ public class SuppliersController {
     }
 
     @DeleteMapping
-    public ApiResponse delete(@Param String suppliersId) {
+    public ApiResponse<Boolean> delete(@Param String suppliersId) {
         boolean isDelete = suppliersService.removeSupplier(suppliersId);
-        return ApiResponse.builder()
+        return ApiResponse.<Boolean>builder()
                 .result(isDelete)
                 .message(isDelete ?
                         "Deleted supplier successfully!" :
@@ -83,11 +77,5 @@ public class SuppliersController {
                 .build();
     }
 
-    @GetMapping("/form")
-    public ApiResponse<FormModel> form() {
-        return ApiResponse.<FormModel>builder()
-                .result(suppliersService.getForm())
-                .build();
-    }
 
 }
