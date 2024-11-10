@@ -4,19 +4,20 @@ import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.ProductRequest;
 import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
-import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
-import com.rin.kanban.dto.response.ProductResponse;
-import com.rin.kanban.dto.response.SubProductResponse;
+import com.rin.kanban.dto.response.*;
 import com.rin.kanban.entity.Category;
 import com.rin.kanban.entity.Product;
 import com.rin.kanban.entity.SubProduct;
 import com.rin.kanban.exception.AppException;
 import com.rin.kanban.exception.ErrorCode;
+import com.rin.kanban.mapper.CategoryMapper;
 import com.rin.kanban.mapper.ProductMapper;
 import com.rin.kanban.mapper.SubProductMapper;
+import com.rin.kanban.mapper.SuppliersMapper;
 import com.rin.kanban.repository.CategoryRepository;
 import com.rin.kanban.repository.ProductRepository;
 import com.rin.kanban.repository.SubProductRepository;
+import com.rin.kanban.repository.SuppliersRepository;
 import com.rin.kanban.repository.custom.ProductCustomRepository;
 import com.rin.kanban.repository.custom.SubProductCustomRepository;
 import lombok.AccessLevel;
@@ -30,7 +31,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,14 +46,12 @@ public class ProductService {
     SubProductMapper subProductMapper;
     ProductCustomRepository productCustomRepository;
     SubProductCustomRepository subProductCustomRepository;
+    CategoryMapper categoryMapper;
+    SuppliersMapper suppliersMapper;
+    SuppliersRepository suppliersRepository;
 
     public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = productMapper.toProduct(productRequest);
-        Set<String> categoryIdsConfirmed = productRequest.getCategoryIds().stream()
-                .map(categoryId -> categoryRepository.findById(categoryId)
-                        .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND)).getId())
-                .collect(Collectors.toSet());
-        product.setCategoryIds(categoryIdsConfirmed);
         return productMapper.toProductResponse(productRepository.save(product));
     }
 
@@ -69,7 +67,15 @@ public class ProductService {
     }
 
     public ProductResponse getProduct(String productId) {
-        return productMapper.toProductResponse(productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND)));
+        ProductResponse productResponse = productMapper.toProductResponse(productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND)));
+        if(productResponse.getCategoryIds() != null){
+            List<CategoryResponse> categories = productResponse.getCategoryIds().stream().map((categoryId)-> categoryMapper.toCategoryResponse(categoryRepository.findById(categoryId).get())).collect(Collectors.toList());
+            productResponse.setCategoryResponse(categories);
+        }
+        if(productResponse.getSupplierId() != null){
+            productResponse.setSupplierResponse(suppliersMapper.toSupplierResponse(suppliersRepository.findById(productResponse.getSupplierId()).get()));
+        }
+        return productResponse;
     }
 
     public List<ProductResponse> getProducts() {
@@ -77,7 +83,7 @@ public class ProductService {
         return products.stream().map(productMapper::toProductResponse).collect(Collectors.toList());
     }
 
-    public PageResponse<ProductHasSubProductsResponse> getProductsWithPageAndSize(int page, int size) {
+    public PageResponse<ProductResponse> getProductsPagination(int page, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         Pageable pageable = PageRequest.of(page - 1, size, sort);
         Page<Product> pageData = productRepository.findAllProducts(pageable);
@@ -85,7 +91,7 @@ public class ProductService {
         return getSubProductsByPage(pageData);
     }
 
-    public PageResponse<ProductHasSubProductsResponse> getProductsWithPageAndSizeAndTitle(int page, int size, String title) {
+    public PageResponse<ProductResponse> getProductsPaginationAndTitle(int page, int size, String title) {
         log.info(title);
         Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         Pageable pageable = PageRequest.of(page - 1, size, sort);
@@ -94,31 +100,25 @@ public class ProductService {
         return getSubProductsByPage(pageData);
     }
 
-    private PageResponse<ProductHasSubProductsResponse> getSubProductsByPage(Page<Product> pageData) {
-        List<ProductHasSubProductsResponse> response = pageData.getContent().stream().map((product) -> {
-            List<SubProduct> subProducts = subProductRepository.findAllByProductIdAndIsDeletedNullOrFalse(product.getId());
-            ProductHasSubProductsResponse productHasSubProductsResponse = productMapper.toProductHasSubProductsResponse(product);
-            if (product.getCategoryIds() != null && !product.getCategoryIds().isEmpty()) {
-                Set<Category> categories = new HashSet<>();
-                product.getCategoryIds().forEach((categoryId) -> {
-                    Category category = categoryRepository.findById(categoryId).orElse(null);
-                    categories.add(category);
-                });
-                productHasSubProductsResponse.setCategories(categories);
-            }
-            if (!subProducts.isEmpty()) {
-                List<SubProductResponse> subProductResponses = subProducts.stream().map(subProductMapper::toSubProductResponse).toList();
-                productHasSubProductsResponse.setSubProductResponse(subProductResponses);
-            }
-            return productHasSubProductsResponse;
-        }).toList();
+    private PageResponse<ProductResponse> getSubProductsByPage(Page<Product> pageData) {
 
-        return PageResponse.<ProductHasSubProductsResponse>builder()
+        List<ProductResponse> productResponses = pageData.getContent().stream().map((product)->{
+            ProductResponse productResponse = productMapper.toProductResponse(product);
+            if(productResponse.getCategoryIds() != null){
+                List<CategoryResponse> categories = productResponse.getCategoryIds().stream().map((categoryId)-> categoryMapper.toCategoryResponse(categoryRepository.findById(categoryId).get())).collect(Collectors.toList());
+                productResponse.setCategoryResponse(categories);
+            }
+            if(productResponse.getSupplierId() != null){
+                productResponse.setSupplierResponse(suppliersMapper.toSupplierResponse(suppliersRepository.findById(productResponse.getSupplierId()).get()));
+            }
+            return productResponse;
+        }).collect(Collectors.toList());
+        return PageResponse.<ProductResponse>builder()
                 .pageSize(pageData.getSize())
                 .currentPage(pageData.getNumber() + 1)
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .data(response)
+                .data(productResponses)
                 .build();
     }
 
@@ -146,7 +146,7 @@ public class ProductService {
         productRepository.saveAll(productsToDelete);
     }
 
-    public PageResponse<ProductHasSubProductsResponse> getProductsByFilterValues(ProductsFilterValuesRequest request) {
+    public PageResponse<ProductResponse> getProductsByFilterValues(ProductsFilterValuesRequest request) {
         Page<Product> productPage = productCustomRepository.findAllByFilterValues(request);
         log.info(productPage.getContent().toString());
         return getSubProductsByPage(productPage);

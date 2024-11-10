@@ -5,7 +5,6 @@ import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.ProductRequest;
 import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
-import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
 import com.rin.kanban.dto.response.ProductResponse;
 import com.rin.kanban.service.ProductService;
 import lombok.AccessLevel;
@@ -49,17 +48,17 @@ public class ProductController {
     }
 
     @GetMapping("/data")
-    public ApiResponse<PageResponse<ProductHasSubProductsResponse>> getAllProducts(
+    public ApiResponse<PageResponse<ProductResponse>> getAllProducts(
             @RequestParam(required = false, value = "title") String title,
             @RequestParam(required = false, value = "page") Integer page,
             @RequestParam(required = false, value = "size") Integer size) {
         if (title != null && page != null && size != null) {
-            return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
-                    .result(productService.getProductsWithPageAndSizeAndTitle(page, size, title))
+            return ApiResponse.<PageResponse<ProductResponse>>builder()
+                    .result(productService.getProductsPaginationAndTitle(page, size, title))
                     .build();
         } else if (page != null && size != null) {
-            return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
-                    .result(productService.getProductsWithPageAndSize(page, size))
+            return ApiResponse.<PageResponse<ProductResponse>>builder()
+                    .result(productService.getProductsPagination(page, size))
                     .build();
         }
         return null;
@@ -107,8 +106,8 @@ public class ProductController {
     }
 
     @PostMapping("/filter")
-    public ApiResponse<PageResponse<ProductHasSubProductsResponse>> getProductsByFilter(@RequestBody @Validated ProductsFilterValuesRequest request) {
-        return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
+    public ApiResponse<PageResponse<ProductResponse>> getProductsByFilter(@RequestBody @Validated ProductsFilterValuesRequest request) {
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
                 .result(productService.getProductsByFilterValues(request))
                 .build();
 

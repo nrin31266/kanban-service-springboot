@@ -12,6 +12,8 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -27,11 +29,16 @@ public class ProductResponse {
     String supplierId;
     String content;
     Instant expiredDate;
+    Set<String> options;
     Set<String> images;
     Set<String> categoryIds;
     Instant createdAt;
     Instant updatedAt;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    SupplierResponse supplierResponse;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    List<CategoryResponse> categoryResponse;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     BigDecimal maxPrice;
     @JsonInclude(JsonInclude.Include.NON_NULL)

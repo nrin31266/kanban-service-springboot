@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -26,16 +27,17 @@ public class Product {
     String description;
     String slug;
     String supplierId;
-    String content=null;
+    String content = null;
     Instant expiredDate = null;
     String[] images;
     boolean isDeleted = false;
     Set<String> categoryIds;
+    Set<String> options;
     @CreatedDate
     Instant createdAt;
     @LastModifiedDate
     Instant updatedAt;
 
-    // This field will contain result from lookup
-    List<SubProduct> subProducts;
+//    // This field will contain result from lookup
+//    List<SubProduct> subProducts;
 }

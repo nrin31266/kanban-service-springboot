@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -19,8 +20,7 @@ import java.util.Set;
 public class SubProduct {
     @MongoId
     String id;
-    String size;
-    String color;
+    Map<String, String> options;
     @Field(targetType = FieldType.DECIMAL128)
     BigDecimal price;
     @Field(targetType = FieldType.DECIMAL128)

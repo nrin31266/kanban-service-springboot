@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -19,8 +20,7 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SubProductResponse {
     String id;
-    String size;
-    String color;
+    Map<String, String> options;
     BigDecimal price;
     BigDecimal quantity;
     Set<String> images;

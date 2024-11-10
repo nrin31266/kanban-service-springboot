@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -25,6 +26,7 @@ public class ProductRequest {
     String supplierId;
     String content;
     Instant expiredDate;
+    Set<String> options;
     Set<String> images;
     Set<String> categoryIds;
 }

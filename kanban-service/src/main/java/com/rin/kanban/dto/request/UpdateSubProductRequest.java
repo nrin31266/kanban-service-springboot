@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -12,11 +13,10 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateSubProductRequest {
-    String size;
-    String color;
+    Map<String, String> options;
     BigDecimal price;
-    BigDecimal quantity;
     BigDecimal discount;
+    BigDecimal quantity;
     String productId;
     Set<String> images;
 }

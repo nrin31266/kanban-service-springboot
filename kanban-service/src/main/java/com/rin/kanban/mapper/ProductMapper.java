@@ -1,7 +1,6 @@
 package com.rin.kanban.mapper;
 
 import com.rin.kanban.dto.request.ProductRequest;
-import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
 import com.rin.kanban.dto.response.ProductResponse;
 import com.rin.kanban.entity.Product;
 import org.mapstruct.Mapper;
@@ -15,7 +14,4 @@ public interface ProductMapper {
     ProductResponse toProductResponse(Product product);
     @Mapping(target = "categoryIds", ignore = true)
     void updateProduct(@MappingTarget Product product, ProductRequest request);
-    @Mapping(target = "subProductResponse", ignore = true)
-    @Mapping(target = "categories", ignore = true)
-    ProductHasSubProductsResponse toProductHasSubProductsResponse(Product product);
 }

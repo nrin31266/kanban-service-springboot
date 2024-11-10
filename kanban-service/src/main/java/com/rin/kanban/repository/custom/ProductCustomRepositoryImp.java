@@ -1,16 +1,11 @@
 package com.rin.kanban.repository.custom;
 
-import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
-import com.rin.kanban.dto.response.ProductHasSubProductsResponse;
-import com.rin.kanban.entity.Category;
 import com.rin.kanban.entity.Product;
-import com.rin.kanban.entity.SubProduct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.bson.types.Decimal128;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,14 +14,11 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor

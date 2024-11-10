@@ -45,28 +45,7 @@ public class SubProductService {
     }
 
     public List<SelectDataResponse> getFilterValues() {
-        List<SubProduct> subProducts = subProductRepository.findColorsAndSizeInSubProducts();
-        List<SelectDataResponse> selectDataResponses = new ArrayList<>();
-        SelectDataResponse selectColors = new SelectDataResponse("colors", new ArrayList<>());
-        SelectDataResponse selectSizes = new SelectDataResponse("sizes", new ArrayList<>());
-        Set<String> uniqueColors = new HashSet<>();
-        Set<String> uniqueSizes = new HashSet<>();
-
-        subProducts.forEach(subProduct -> {
-            if (subProduct.getColor() != null) {
-                uniqueColors.add(subProduct.getColor());
-            }
-            if (subProduct.getSize() != null) {
-                uniqueSizes.add(subProduct.getSize());
-            }
-        });
-
-        uniqueColors.forEach(color -> selectColors.getSelectData().add(color));
-        uniqueSizes.forEach(size -> selectSizes.getSelectData().add(size));
-
-        selectDataResponses.add(selectColors);
-        selectDataResponses.add(selectSizes);
-        return selectDataResponses;
+        return null;
     }
 
     public List<SubProductResponse> getSubProductsByProductId(String productId) {
