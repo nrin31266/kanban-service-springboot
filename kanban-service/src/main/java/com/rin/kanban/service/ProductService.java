@@ -125,13 +125,6 @@ public class ProductService {
     public ProductResponse updateProduct(String productId, ProductRequest productRequest) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         productMapper.updateProduct(product, productRequest);
-        if (productRequest.getCategoryIds() != null) {
-            Set<String> categoryIdsConfirmed = productRequest.getCategoryIds().stream()
-                    .map(categoryId -> categoryRepository.findById(categoryId)
-                            .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND)).getId())
-                    .collect(Collectors.toSet());
-            product.setCategoryIds(categoryIdsConfirmed);
-        }
         return productMapper.toProductResponse(productRepository.save(product));
     }
 

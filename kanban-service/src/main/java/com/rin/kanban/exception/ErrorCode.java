@@ -22,6 +22,7 @@ public enum ErrorCode {
     PROMOTION_NOT_FOUND(10023, "Promotion not found", HttpStatus.NOT_FOUND),
     PROMOTION_EXISTED(10024, "Promotion existed", HttpStatus.CONFLICT),
     DISCOUNT_INVALID(10025, "Discount is invalid", HttpStatus.BAD_REQUEST),
+    CART_NOT_FOUND(10026, "Cart not found", HttpStatus.NOT_FOUND),
     ;
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;

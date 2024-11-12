@@ -62,16 +62,6 @@ public class ProductController {
                     .build();
         }
         return null;
-//        List<ProductHasSubProductsResponse> productHasSubProductsResponses = productService.getProductsData();
-//        return ApiResponse.<PageResponse<ProductHasSubProductsResponse>>builder()
-//                .result(PageResponse.<ProductHasSubProductsResponse>builder()
-//                        .totalElements(productHasSubProductsResponses.size())
-//                        .totalPages(1)
-//                        .currentPage(1)
-//                        .pageSize(1)
-//                        .data(productHasSubProductsResponses)
-//                        .build())
-//                .build();
     }
 
     @GetMapping("/{productId}")
