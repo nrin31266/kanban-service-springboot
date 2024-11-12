@@ -2,12 +2,15 @@ package com.rin.kanban.entity;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Map;
 
 @Data
@@ -24,4 +27,8 @@ public class Cart {
     int count;
     int quantity;
     Map<String, String> options;
+    @CreatedDate
+    Instant createdAt;
+    @LastModifiedDate
+    Instant updatedAt;
 }

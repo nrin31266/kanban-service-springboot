@@ -10,6 +10,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/carts")
@@ -38,6 +40,12 @@ public class CartController {
         cartService.deleteCart(subProductId, createdBy);
         return ApiResponse.builder()
                 .result("Deleted successfully")
+                .build();
+    }
+    @GetMapping("/{createdBy}")
+    public ApiResponse<List<CartResponse>> getCarts(@PathVariable(name = "createdBy") String createdBy) {
+        return ApiResponse.<List<CartResponse>>builder()
+                .result(cartService.getCarts(createdBy))
                 .build();
     }
 

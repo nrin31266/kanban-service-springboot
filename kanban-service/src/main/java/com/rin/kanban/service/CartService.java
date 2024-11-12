@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -32,5 +34,9 @@ public class CartService {
     public void deleteCart(String subProductId, String createdBy) {
         Cart cart = cartRepository.findCart(subProductId, createdBy).orElseThrow(()-> new AppException(ErrorCode.CART_NOT_FOUND));
         cartRepository.delete(cart);
+    }
+
+    public List<CartResponse> getCarts(String createdBy) {
+        return cartRepository.findAllByCreatedByOrderByUpdatedAtDesc(createdBy).stream().map(cartMapper::toCartResponse).toList();
     }
 }

@@ -2,8 +2,12 @@ package com.rin.kanban.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,4 +22,5 @@ public class CartRequest {
         int count;
         int quantity;
         Map<String, String> options;
+
 }

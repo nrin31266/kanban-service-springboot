@@ -2,7 +2,9 @@ package com.rin.kanban.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.Instant;
 import java.util.Map;
 
 @Data
@@ -17,4 +19,6 @@ public class CartResponse {
     int count;
     int quantity;
     Map<String, String> options;
+    Instant createdAt;
+    Instant updatedAt;
 }
