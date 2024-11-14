@@ -1,6 +1,7 @@
 package com.rin.kanban.controller;
 
 import com.rin.kanban.dto.ApiResponse;
+import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.CartRequest;
 import com.rin.kanban.dto.response.CartResponse;
 import com.rin.kanban.service.CartService;
@@ -43,9 +44,13 @@ public class CartController {
                 .build();
     }
     @GetMapping("/{createdBy}")
-    public ApiResponse<List<CartResponse>> getCarts(@PathVariable(name = "createdBy") String createdBy) {
-        return ApiResponse.<List<CartResponse>>builder()
-                .result(cartService.getCarts(createdBy))
+    public ApiResponse<PageResponse<CartResponse>> getCarts(
+            @PathVariable(name = "createdBy") String createdBy,
+            @RequestParam(name = "page", defaultValue = "1" , required = false) int page,
+            @RequestParam(name = "size", defaultValue = "10", required = false) int size
+    ) {
+        return ApiResponse.<PageResponse<CartResponse>>builder()
+                .result(cartService.getCarts(createdBy, page, size))
                 .build();
     }
 

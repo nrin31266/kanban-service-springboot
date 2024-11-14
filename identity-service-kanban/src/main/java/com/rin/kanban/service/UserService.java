@@ -38,10 +38,7 @@ public class UserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
-    KafkaTemplate<String, Object> kafkaTemplate;
-    OtpGenerator otpGenerator;
     OtpService otpService;
-    OtpRepository otpRepository;
 
 
     public UserResponse createUser(CreateUserRequest request) {

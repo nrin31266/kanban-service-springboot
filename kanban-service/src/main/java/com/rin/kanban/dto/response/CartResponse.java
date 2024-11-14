@@ -16,9 +16,12 @@ public class CartResponse {
     String id;
     String createdBy;
     String subProductId;
+    String title;
+    String productId;
+    String imageUrl;
     int count;
-    int quantity;
-    Map<String, String> options;
+    SubProductResponse subProductResponse;
+    ProductResponse productResponse;
     Instant createdAt;
     Instant updatedAt;
 }

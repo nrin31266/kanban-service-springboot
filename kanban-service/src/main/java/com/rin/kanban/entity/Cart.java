@@ -5,13 +5,8 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.data.mongodb.core.mapping.MongoId;
-
-import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Map;
 
 @Data
 @Document("carts")
@@ -23,10 +18,11 @@ public class Cart {
     @MongoId
     String id;
     String createdBy;
+    String imageUrl;
     String subProductId;
+    String productId;
+    String title;
     int count;
-    int quantity;
-    Map<String, String> options;
     @CreatedDate
     Instant createdAt;
     @LastModifiedDate

@@ -237,7 +237,7 @@ public class AuthenticationService {
                 .subject(user.getId())
                 .issuer("rin.com")
                 .issueTime(new Date())
-                .expirationTime(new Date(Instant.now().plus(5, ChronoUnit.HOURS).toEpochMilli()))
+                .expirationTime(new Date(Instant.now().plus(10, ChronoUnit.DAYS).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();
