@@ -43,14 +43,23 @@ public class CartController {
                 .result("Deleted successfully")
                 .build();
     }
-    @GetMapping("/{createdBy}")
+    @GetMapping
     public ApiResponse<PageResponse<CartResponse>> getCarts(
-            @PathVariable(name = "createdBy") String createdBy,
             @RequestParam(name = "page", defaultValue = "1" , required = false) int page,
             @RequestParam(name = "size", defaultValue = "5", required = false) int size
     ) {
         return ApiResponse.<PageResponse<CartResponse>>builder()
-                .result(cartService.getCarts(createdBy, page, size))
+                .result(cartService.getCarts(page, size))
+                .build();
+    }
+
+    @GetMapping("/additional")
+    public ApiResponse<CartResponse> getCartAdditional(
+            @RequestParam(name = "page", required = true) int page,
+            @RequestParam(name = "size", required = true) int size
+    ){
+        return ApiResponse.<CartResponse>builder()
+                .result(cartService.getAdditionalCart(page, size))
                 .build();
     }
 

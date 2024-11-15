@@ -23,6 +23,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -42,10 +44,14 @@ public class CartService {
 
     public CartResponse addCart(CartRequest request) {
         if(cartRepository.findCart(request.getSubProductId(), request.getCreatedBy()).isPresent()){
-            return updateCart(request);
+            return updateCartCount(request);
         }
         Cart cart = cartMapper.toCart(request);
-        return cartMapper.toCartResponse(cartRepository.save(cart));
+        CartResponse cartResponse = cartMapper.toCartResponse(cartRepository.save(cart));
+        cartResponse.setProductResponse(getProductById(cart.getProductId()));
+        cartResponse.setSubProductResponse(getSubProduct(cart.getSubProductId()));
+
+        return cartResponse;
     }
 
     public CartResponse updateCart(CartRequest request) {
@@ -55,7 +61,7 @@ public class CartService {
 
         cartMapper.updateCart(cart, request);
 
-        int newCount = cart.getCount() + request.getCount();
+        int newCount = request.getCount();
 
 
 
@@ -68,8 +74,30 @@ public class CartService {
         }
 
         cart.setCount(newCount);
+        CartResponse cartResponse = cartMapper.toCartResponse(cartRepository.save(cart));
+        cartResponse.setProductResponse(getProductById(cart.getProductId()));
+        cartResponse.setSubProductResponse(getSubProduct(cart.getSubProductId()));
 
-        return cartMapper.toCartResponse(cartRepository.save(cart));
+        return cartResponse;
+    }
+
+    private CartResponse updateCartCount(CartRequest request) {
+        Cart cart = cartRepository.findCart(request.getSubProductId(), request.getCreatedBy()).orElseThrow(()-> new AppException(ErrorCode.CART_NOT_FOUND));
+        SubProduct subProduct = subProductRepository.findById(request.getSubProductId()).orElseThrow(()-> new AppException(ErrorCode.SUB_PRODUCT_NOT_FOUND));
+        cartMapper.updateCart(cart, request);
+        int newCount = cart.getCount() + request.getCount();
+        if(newCount > 100){
+            newCount = 100;
+        }
+        if(newCount > subProduct.getQuantity()){
+            newCount = subProduct.getQuantity();
+        }
+        cart.setCount(newCount);
+        CartResponse cartResponse = cartMapper.toCartResponse(cartRepository.save(cart));
+        cartResponse.setProductResponse(getProductById(cart.getProductId()));
+        cartResponse.setSubProductResponse(getSubProduct(cart.getSubProductId()));
+
+        return cartResponse;
     }
 
     public void deleteCart(String subProductId, String createdBy) {
@@ -77,10 +105,13 @@ public class CartService {
         cartRepository.delete(cart);
     }
 
-    public PageResponse<CartResponse> getCarts(String createdBy, int page, int size) {
+    public PageResponse<CartResponse> getCarts(int page, int size) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+
         Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Cart> pageData = cartRepository.findAllByCreatedByOrderByUpdatedAtDesc(createdBy, pageable);
+        Page<Cart> pageData = cartRepository.findAllByCreatedByOrderByUpdatedAtDesc(userId, pageable);
         log.info(pageData.getContent().toString());
         List<CartResponse> cartsResponse = pageData.getContent().stream().map(cart -> {
             CartResponse cartResponse = cartMapper.toCartResponse(cart);
@@ -99,6 +130,20 @@ public class CartService {
 
     }
 
+    public CartResponse getAdditionalCart(int page, int size) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
+        //next page
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<Cart> pageData = cartRepository.findAllByCreatedByOrderByUpdatedAtDesc(userId, pageable);
+
+        CartResponse cartResponse = cartMapper.toCartResponse(pageData.getContent().getLast());
+        cartResponse.setProductResponse(getProductById(cartResponse.getProductId()));
+        cartResponse.setSubProductResponse(getSubProduct(cartResponse.getSubProductId()));
+        return cartResponse;
+    }
+
     private SubProductResponse getSubProduct(String subProductId) {
         return subProductRepository.findById(subProductId).map(subProductMapper::toSubProductResponse).orElse(null);
     }
@@ -106,4 +151,6 @@ public class CartService {
     private ProductResponse getProductById(String productId) {
         return productRepository.findById(productId).map(productMapper::toProductResponse).orElse(null);
     }
+
+
 }
