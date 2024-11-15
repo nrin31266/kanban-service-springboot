@@ -47,7 +47,7 @@ public class CartController {
     public ApiResponse<PageResponse<CartResponse>> getCarts(
             @PathVariable(name = "createdBy") String createdBy,
             @RequestParam(name = "page", defaultValue = "1" , required = false) int page,
-            @RequestParam(name = "size", defaultValue = "10", required = false) int size
+            @RequestParam(name = "size", defaultValue = "5", required = false) int size
     ) {
         return ApiResponse.<PageResponse<CartResponse>>builder()
                 .result(cartService.getCarts(createdBy, page, size))

@@ -23,8 +23,7 @@ public class SubProduct {
     Map<String, String> options;
     @Field(targetType = FieldType.DECIMAL128)
     BigDecimal price;
-    @Field(targetType = FieldType.DECIMAL128)
-    BigDecimal quantity;
+    int quantity;
     @Field(targetType = FieldType.DECIMAL128)
     BigDecimal discount;
     Set<String> images;

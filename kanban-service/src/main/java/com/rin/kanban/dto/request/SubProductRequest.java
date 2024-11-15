@@ -16,7 +16,7 @@ public class SubProductRequest {
     Map<String, String> options;
     BigDecimal price;
     BigDecimal discount;
-    BigDecimal quantity;
+    int quantity;
     String productId;
     Set<String> images;
 }

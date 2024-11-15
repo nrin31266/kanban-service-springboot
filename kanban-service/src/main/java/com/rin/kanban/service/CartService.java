@@ -6,6 +6,7 @@ import com.rin.kanban.dto.response.CartResponse;
 import com.rin.kanban.dto.response.ProductResponse;
 import com.rin.kanban.dto.response.SubProductResponse;
 import com.rin.kanban.entity.Cart;
+import com.rin.kanban.entity.SubProduct;
 import com.rin.kanban.exception.AppException;
 import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.CartMapper;
@@ -40,13 +41,34 @@ public class CartService {
     ProductMapper productMapper;
 
     public CartResponse addCart(CartRequest request) {
+        if(cartRepository.findCart(request.getSubProductId(), request.getCreatedBy()).isPresent()){
+            return updateCart(request);
+        }
         Cart cart = cartMapper.toCart(request);
         return cartMapper.toCartResponse(cartRepository.save(cart));
     }
 
     public CartResponse updateCart(CartRequest request) {
         Cart cart = cartRepository.findCart(request.getSubProductId(), request.getCreatedBy()).orElseThrow(()-> new AppException(ErrorCode.CART_NOT_FOUND));
+        SubProduct subProduct = subProductRepository.findById(request.getSubProductId()).orElseThrow(()-> new AppException(ErrorCode.SUB_PRODUCT_NOT_FOUND));
+
+
         cartMapper.updateCart(cart, request);
+
+        int newCount = cart.getCount() + request.getCount();
+
+
+
+        if(newCount > 100){
+            newCount = 100;
+        }
+
+        if(newCount > subProduct.getQuantity()){
+            newCount = subProduct.getQuantity();
+        }
+
+        cart.setCount(newCount);
+
         return cartMapper.toCartResponse(cartRepository.save(cart));
     }
 

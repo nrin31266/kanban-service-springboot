@@ -22,7 +22,7 @@ public class SubProductResponse {
     String id;
     Map<String, String> options;
     BigDecimal price;
-    BigDecimal quantity;
+    int quantity;
     Set<String> images;
     String productId;
     BigDecimal discount;
