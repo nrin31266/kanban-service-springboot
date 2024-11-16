@@ -2,9 +2,11 @@ package com.rin.kanban.service;
 
 import com.rin.kanban.constant.DiscountType;
 import com.rin.kanban.dto.PageResponse;
+import com.rin.kanban.dto.request.CheckDiscountCodeRequest;
 import com.rin.kanban.dto.request.CreatePromotionRequest;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.request.UpdatePromotionRequest;
+import com.rin.kanban.dto.response.CheckDiscountCodeResponse;
 import com.rin.kanban.dto.response.PromotionResponse;
 import com.rin.kanban.entity.Promotion;
 import com.rin.kanban.exception.AppException;
@@ -22,7 +24,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,6 +87,31 @@ public class PromotionService {
                 .pageSize(pageData.getNumberOfElements())
                 .data(promotionsResponse)
                 .build();
+    }
+
+    public CheckDiscountCodeResponse checkDiscountCode(CheckDiscountCodeRequest request) {
+        Optional<Promotion> optionalPromotion = promotionRepository.findByCode(request.getDiscountCode());
+        CheckDiscountCodeResponse response = new CheckDiscountCodeResponse();
+        if(optionalPromotion.isPresent()){
+            Promotion promotion = optionalPromotion.get();
+            if(promotion.getQuantity()<1){
+                response.setIsValid(false);
+                response.setMessage("Un stock");
+            }else if(Instant.now().isBefore(promotion.getStart())){
+                response.setIsValid(false);
+                response.setMessage("Discounts not yet available");
+            }else if(Instant.now().isAfter(promotion.getEnd())){
+                response.setIsValid(false);
+                response.setMessage("Discounts ended");
+            }else{
+                response.setIsValid(true);
+                response.setMessage("Ok");
+            }
+            response.setPromotionResponse(promotionMapper.toPromotionResponse(optionalPromotion.get()));
+        }else{
+            response.setIsValid(false);
+        }
+        return response;
     }
 
 }

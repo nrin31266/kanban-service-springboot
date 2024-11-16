@@ -2,9 +2,11 @@ package com.rin.kanban.controller;
 
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.PageResponse;
+import com.rin.kanban.dto.request.CheckDiscountCodeRequest;
 import com.rin.kanban.dto.request.CreatePromotionRequest;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.request.UpdatePromotionRequest;
+import com.rin.kanban.dto.response.CheckDiscountCodeResponse;
 import com.rin.kanban.dto.response.PromotionResponse;
 import com.rin.kanban.service.PromotionService;
 import lombok.AccessLevel;
@@ -61,6 +63,14 @@ public class PromotionController {
             ){
         return ApiResponse.<List<PromotionResponse>>builder()
                 .result(promotionService.softDeletePromotions(request))
+                .build();
+    }
+    @PostMapping("/check-code")
+    public ApiResponse<CheckDiscountCodeResponse> checkPromotionCode(
+            @RequestBody CheckDiscountCodeRequest request
+            ){
+        return ApiResponse.<CheckDiscountCodeResponse>builder()
+                .result(promotionService.checkDiscountCode(request))
                 .build();
     }
 }
