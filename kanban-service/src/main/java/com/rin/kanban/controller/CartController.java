@@ -53,6 +53,15 @@ public class CartController {
                 .build();
     }
 
+    @GetMapping("/{subPrId}")
+    public ApiResponse<CartResponse> getCart(
+            @PathVariable("subPrId") String subPrId
+    ) {
+        return ApiResponse.<CartResponse>builder()
+                .result(cartService.getCart(subPrId))
+                .build();
+    }
+
     @GetMapping("/additional")
     public ApiResponse<CartResponse> getCartAdditional(
             @RequestParam(name = "page", required = true) int page,
@@ -60,6 +69,16 @@ public class CartController {
     ){
         return ApiResponse.<CartResponse>builder()
                 .result(cartService.getAdditionalCart(page, size))
+                .build();
+    }
+
+    @GetMapping("/to-payment")
+    public ApiResponse<List<CartResponse>> getCartsToPayment(
+            @RequestParam(name = "ids", required = true) String ids
+            ){
+        log.info(ids);
+        return ApiResponse.<List<CartResponse>>builder()
+                .result(cartService.getCartsToPayment(ids))
                 .build();
     }
 

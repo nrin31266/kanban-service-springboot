@@ -27,8 +27,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -43,20 +43,20 @@ public class CartService {
     ProductMapper productMapper;
 
     public CartResponse addCart(CartRequest request) {
-        if(cartRepository.findCart(request.getSubProductId(), request.getCreatedBy()).isPresent()){
+        if (cartRepository.findCart(request.getSubProductId(), request.getCreatedBy()).isPresent()) {
             return updateCartCount(request);
         }
         Cart cart = cartMapper.toCart(request);
         CartResponse cartResponse = cartMapper.toCartResponse(cartRepository.save(cart));
         cartResponse.setProductResponse(getProductById(cart.getProductId()));
         cartResponse.setSubProductResponse(getSubProduct(cart.getSubProductId()));
-
+        cartResponse.setIsCreated(true);
         return cartResponse;
     }
 
     public CartResponse updateCart(CartRequest request) {
-        Cart cart = cartRepository.findCart(request.getSubProductId(), request.getCreatedBy()).orElseThrow(()-> new AppException(ErrorCode.CART_NOT_FOUND));
-        SubProduct subProduct = subProductRepository.findById(request.getSubProductId()).orElseThrow(()-> new AppException(ErrorCode.SUB_PRODUCT_NOT_FOUND));
+        Cart cart = cartRepository.findCart(request.getSubProductId(), request.getCreatedBy()).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
+        SubProduct subProduct = subProductRepository.findById(request.getSubProductId()).orElseThrow(() -> new AppException(ErrorCode.SUB_PRODUCT_NOT_FOUND));
 
 
         cartMapper.updateCart(cart, request);
@@ -64,12 +64,10 @@ public class CartService {
         int newCount = request.getCount();
 
 
-
-        if(newCount > 100){
+        if (newCount > 100) {
             newCount = 100;
         }
-
-        if(newCount > subProduct.getQuantity()){
+        if (newCount > subProduct.getQuantity()) {
             newCount = subProduct.getQuantity();
         }
 
@@ -82,14 +80,14 @@ public class CartService {
     }
 
     private CartResponse updateCartCount(CartRequest request) {
-        Cart cart = cartRepository.findCart(request.getSubProductId(), request.getCreatedBy()).orElseThrow(()-> new AppException(ErrorCode.CART_NOT_FOUND));
-        SubProduct subProduct = subProductRepository.findById(request.getSubProductId()).orElseThrow(()-> new AppException(ErrorCode.SUB_PRODUCT_NOT_FOUND));
+        Cart cart = cartRepository.findCart(request.getSubProductId(), request.getCreatedBy()).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
+        SubProduct subProduct = subProductRepository.findById(request.getSubProductId()).orElseThrow(() -> new AppException(ErrorCode.SUB_PRODUCT_NOT_FOUND));
         cartMapper.updateCart(cart, request);
         int newCount = cart.getCount() + request.getCount();
-        if(newCount > 100){
+        if (newCount > 100) {
             newCount = 100;
         }
-        if(newCount > subProduct.getQuantity()){
+        if (newCount > subProduct.getQuantity()) {
             newCount = subProduct.getQuantity();
         }
         cart.setCount(newCount);
@@ -101,18 +99,17 @@ public class CartService {
     }
 
     public void deleteCart(String subProductId, String createdBy) {
-        Cart cart = cartRepository.findCart(subProductId, createdBy).orElseThrow(()-> new AppException(ErrorCode.CART_NOT_FOUND));
+        Cart cart = cartRepository.findCart(subProductId, createdBy).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
         cartRepository.delete(cart);
     }
 
+
     public PageResponse<CartResponse> getCarts(int page, int size) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userId = authentication.getName();
+
 
         Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Cart> pageData = cartRepository.findAllByCreatedByOrderByUpdatedAtDesc(userId, pageable);
-        log.info(pageData.getContent().toString());
+        Page<Cart> pageData = cartRepository.findAllByCreatedByOrderByUpdatedAtDesc(getUserId(), pageable);
         List<CartResponse> cartsResponse = pageData.getContent().stream().map(cart -> {
             CartResponse cartResponse = cartMapper.toCartResponse(cart);
             cartResponse.setSubProductResponse(getSubProduct(cart.getSubProductId()));
@@ -131,17 +128,22 @@ public class CartService {
     }
 
     public CartResponse getAdditionalCart(int page, int size) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userId = authentication.getName();
+
         Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         //next page
         Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Cart> pageData = cartRepository.findAllByCreatedByOrderByUpdatedAtDesc(userId, pageable);
+        Page<Cart> pageData = cartRepository.findAllByCreatedByOrderByUpdatedAtDesc(getUserId(), pageable);
 
         CartResponse cartResponse = cartMapper.toCartResponse(pageData.getContent().getLast());
         cartResponse.setProductResponse(getProductById(cartResponse.getProductId()));
         cartResponse.setSubProductResponse(getSubProduct(cartResponse.getSubProductId()));
         return cartResponse;
+    }
+
+    public List<CartResponse> getCartsToPayment(String request) {
+        String[] idList = request.split(",");
+        log.info(Arrays.toString(idList));
+        return Arrays.stream(idList).map(this::getCart).toList();
     }
 
     private SubProductResponse getSubProduct(String subProductId) {
@@ -153,4 +155,16 @@ public class CartService {
     }
 
 
+    public CartResponse getCart(String subPrId) {
+
+        CartResponse cartResponse = cartMapper.toCartResponse(cartRepository.findCart(subPrId, getUserId()).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND)));
+        cartResponse.setProductResponse(getProductById(cartResponse.getProductId()));
+        cartResponse.setSubProductResponse(getSubProduct(cartResponse.getSubProductId()));
+        return cartResponse;
+    }
+
+    private String getUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
+    }
 }

@@ -20,6 +20,7 @@ public class CartResponse {
     String productId;
     String imageUrl;
     int count;
+    Boolean isCreated;
     SubProductResponse subProductResponse;
     ProductResponse productResponse;
     Instant createdAt;
