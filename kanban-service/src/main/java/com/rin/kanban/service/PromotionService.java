@@ -110,6 +110,7 @@ public class PromotionService {
             response.setPromotionResponse(promotionMapper.toPromotionResponse(optionalPromotion.get()));
         }else{
             response.setIsValid(false);
+            response.setMessage("Invalid discount code");
         }
         return response;
     }
