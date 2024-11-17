@@ -50,11 +50,7 @@ public class AddressService {
     public List<AddressResponse> getAddressesByUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
-
-
-        List<Address> addresses = addressRepository.findByUserId(userId);
-
-
+        List<Address> addresses = addressRepository.findByUserIdOrderByUpdatedAtDesc(userId);
         return addresses.stream().map(address -> {
             AddressResponse addressResponse = addressMapper.toAddressResponse(address);
             addressResponse.setAddress(createAddress(address));
@@ -80,7 +76,7 @@ public class AddressService {
 
     public void updateAddressIsDefault(UpdateAddressIsDefaultEvent addressIsDefaultEvent) {
 
-        List<Address> addresses = addressRepository.findByUserId(addressIsDefaultEvent.getUserId());
+        List<Address> addresses = addressRepository.findByUserIdOrderByUpdatedAtDesc(addressIsDefaultEvent.getUserId());
         addresses.stream().map((v) -> {
             if (v.getIsDefault() && !v.getId().equals(addressIsDefaultEvent.getAddress().getId())) {
                 v.setIsDefault(false);
