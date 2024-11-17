@@ -1,0 +1,13 @@
+server:
+  port: 3005
+  servlet:
+    context-path: /profiles
+
+spring:
+  application:
+    name: profile-service
+  data:
+    mongodb:
+      uri: mongodb://nrin31266:16092005@localhost:27017/kanban-profile?authSource=admin
+      auto-index-creation: true
+

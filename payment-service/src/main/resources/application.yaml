@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/payment-service-kanban
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: nrin31266
+    password: 16092005
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+
+
+server:
+  port: 3006
+  servlet:
+    context-path: /payments
