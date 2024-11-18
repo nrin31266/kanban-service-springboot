@@ -17,6 +17,10 @@ public class AddressResponse {
     String name;
     String phoneNumber;
     Boolean isDefault;
+    String houseNo;
+    String province;
+    String district;
+    String ward;
     Instant createdAt;
     Instant updatedAt;
 }

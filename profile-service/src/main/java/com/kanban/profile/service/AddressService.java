@@ -4,6 +4,8 @@ import com.kanban.event.dto.UpdateAddressIsDefaultEvent;
 import com.kanban.profile.dto.request.AddressRequest;
 import com.kanban.profile.dto.response.AddressResponse;
 import com.kanban.profile.entity.Address;
+import com.kanban.profile.exception.AppException;
+import com.kanban.profile.exception.ErrorCode;
 import com.kanban.profile.mapper.AddressMapper;
 import com.kanban.profile.repository.AddressRepository;
 import lombok.AccessLevel;
@@ -76,7 +78,7 @@ public class AddressService {
 
     public void updateAddressIsDefault(UpdateAddressIsDefaultEvent addressIsDefaultEvent) {
 
-        List<Address> addresses = addressRepository.findByUserIdOrderByUpdatedAtDesc(addressIsDefaultEvent.getUserId());
+        List<Address> addresses = addressRepository.findByUserIdAndIsDefaultIsTrue(addressIsDefaultEvent.getUserId());
         addresses.stream().map((v) -> {
             if (v.getIsDefault() && !v.getId().equals(addressIsDefaultEvent.getAddress().getId())) {
                 v.setIsDefault(false);
@@ -85,6 +87,31 @@ public class AddressService {
         }).collect(Collectors.toList());
         addressRepository.saveAll(addresses);
     }
+
+    public void deleteAddress(String addressId) {
+        addressRepository.deleteById(addressId);
+    }
+
+    public AddressResponse updateAddress(AddressRequest addressRequest, String addressId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+        Address address = addressRepository.findById(addressId).orElseThrow(()->new AppException(ErrorCode.ADDRESS_NOT_FOUND));
+        if(!address.getUserId().equals(userId)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        addressMapper.toUpdateAddress(address, addressRequest);
+        addressRepository.save(address);
+        AddressResponse addressResponse = addressMapper.toAddressResponse(address);
+        addressResponse.setAddress(createAddress(address));
+        if (address.getIsDefault()) {
+            kafkaTemplate.send("update-address-is-default", UpdateAddressIsDefaultEvent.builder()
+                    .address(addressResponse)
+                    .userId(userId)
+                    .build());
+        }
+        return addressResponse;
+    }
+
 
 
 }

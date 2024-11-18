@@ -45,4 +45,17 @@ public class AddressController {
         addressService.updateAddressIsDefault(request);
     }
 
+    @PutMapping("/{addressId}")
+    public ApiResponse<AddressResponse> updateAddress(@PathVariable("addressId") String addressId, @RequestBody AddressRequest addressRequest) {
+        return ApiResponse.<AddressResponse>builder()
+                .result(addressService.updateAddress(addressRequest,addressId))
+                .build();
+
+    }
+    @DeleteMapping("/{addressId}")
+    public ApiResponse deleteAddress(@PathVariable("addressId") String addressId) {
+        addressService.deleteAddress(addressId);
+        return ApiResponse.builder()
+                .build();
+    }
 }

@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface AddressRepository extends MongoRepository<Address, String> {
     List<Address> findByUserIdOrderByUpdatedAtDesc(String userId);
+    List<Address> findByUserIdAndIsDefaultIsTrue(String userId);
 }
