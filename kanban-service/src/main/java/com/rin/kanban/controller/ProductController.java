@@ -109,4 +109,11 @@ public class ProductController {
                 .result(productService.getBestsellerProducts())
                 .build();
     }
+
+    @GetMapping("/related/{productId}")
+    public ApiResponse<List<ProductResponse>> getRelatedProducts(@PathVariable("productId") String productId) {
+        return ApiResponse.<List<ProductResponse>>builder()
+                .result(productService.getRelatedProducts(productId))
+                .build();
+    }
 }

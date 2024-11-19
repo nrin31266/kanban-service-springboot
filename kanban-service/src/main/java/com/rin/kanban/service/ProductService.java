@@ -31,6 +31,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,7 +44,6 @@ public class ProductService {
     ProductMapper productMapper;
     CategoryRepository categoryRepository;
     SubProductRepository subProductRepository;
-    SubProductMapper subProductMapper;
     ProductCustomRepository productCustomRepository;
     SubProductCustomRepository subProductCustomRepository;
     CategoryMapper categoryMapper;
@@ -152,12 +152,37 @@ public class ProductService {
         Page<Product> pageData = productRepository.findAllProducts(pageable);
         return pageData.getContent().stream().map((product)->{
             ProductResponse productResponse = productMapper.toProductResponse(product);
-            Optional<SubProduct> maxPriceSubProduct = subProductCustomRepository.findMaxPriceSubProduct(product.getId());
-            maxPriceSubProduct.ifPresent(subProduct -> productResponse.setMaxPrice(subProduct.getPrice()));
-            Optional<SubProduct> minPriceSubProduct = subProductCustomRepository.findMinPriceSubProduct(product.getId());
-            minPriceSubProduct.ifPresent(subProduct -> productResponse.setMinPrice(subProduct.getPrice()));
+            productResponse.setMinPrice(getMinPrice(product.getId()));
+            productResponse.setMaxPrice(getMaxPrice(product.getId()));
             return productResponse;
         }).collect(Collectors.toList());
+    }
+
+    private BigDecimal getMinPrice(String productId) {
+        Optional<SubProduct> maxPriceSubProduct = subProductCustomRepository.findMinPriceSubProduct(productId);
+        return maxPriceSubProduct.map(SubProduct::getPrice).orElse(null);
+    }
+
+    private BigDecimal getMaxPrice(String productId) {
+        Optional<SubProduct> minPriceSubProduct = subProductCustomRepository.findMaxPriceSubProduct(productId);
+        return minPriceSubProduct.map(SubProduct::getPrice).orElse(null);
+    }
+
+    public List<ProductResponse> getRelatedProducts(String productId) {
+        Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        if(product.getCategoryIds()!=null){
+            Pageable pageable = PageRequest.of(0, 4, Sort.by(Sort.Direction.DESC, "updatedAt"));
+            List<Product> relatedProducts = productRepository.findByCategoryIdsInAndNotDeleted( productId,product.getCategoryIds(), pageable);
+            log.info(relatedProducts.toString());
+            return  relatedProducts.stream().map((p)->{
+                ProductResponse productResponse = productMapper.toProductResponse(p);
+                productResponse.setMinPrice(getMinPrice(p.getId()));
+                productResponse.setMaxPrice(getMaxPrice(p.getId()));
+                return productResponse;
+            }).collect(Collectors.toList());
+
+        }
+        return new ArrayList<>();
     }
 
 }
