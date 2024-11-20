@@ -24,6 +24,10 @@ server:
   servlet:
     context-path: /identity
 
+app:
+  service:
+    profile: http://localhost:3005/profiles
+
 outbound:
   identity:
     client-id: ${GG_CLIENT_ID}

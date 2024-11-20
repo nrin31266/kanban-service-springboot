@@ -12,6 +12,7 @@ public enum ErrorCode {
     UNAUTHORIZED(10013, "You are not authorized to access this resource", HttpStatus.UNAUTHORIZED),
     UNAUTHENTICATED(10014, "You are not authenticated", HttpStatus.UNAUTHORIZED),
     ADDRESS_NOT_FOUND(5001, "Address not found", HttpStatus.NOT_FOUND),
+    PROFILE_NOT_FOUND(5002, "Profile not found", HttpStatus.NOT_FOUND),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

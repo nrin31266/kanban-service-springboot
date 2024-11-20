@@ -140,12 +140,12 @@ public class OtpService {
 
     private NotificationEvent createEmailVerify(User user){
         HashMap<String, Object> params = new HashMap<>();
-        params.put("name", user.getName());
+        params.put("name", user.getId());
         String otpCode = otpGenerator.generateOtpCode();
         createOtp(user.getId(), otpCode);
         params.put("OTPCode", otpCode);
         return NotificationEvent.builder()
-                .body("Hello " + user.getName() + ", this is OTP code of you: ")
+                .body("Hello " + user.getId() + ", this is OTP code of you: ")
                 .recipient(user.getEmail())
                 .param(params)
                 .subject("Verify email")

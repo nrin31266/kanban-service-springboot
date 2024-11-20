@@ -1,28 +1,32 @@
-package com.rin.kanban.entity;
+package com.kanban.profile.entity;
 
-import com.rin.kanban.constant.PaymentMethod;
-import com.rin.kanban.constant.PaymentStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
+@Document("profiles")
 @Data
-@Document("bill")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Bill {
+public class Profile {
     @MongoId
     String id;
+    @Indexed(unique = true)
     String userId;
-    PaymentMethod paymentMethod;
-    PaymentStatus paymentStatus;
+    String name;
+    String phone;
+    LocalDate dob;
+    String avatar;
+    int gender;
     @CreatedDate
     Instant createdAt;
     @LastModifiedDate

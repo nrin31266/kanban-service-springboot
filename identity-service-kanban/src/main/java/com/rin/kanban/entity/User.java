@@ -21,7 +21,6 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
-    String name;
     @Column(unique = true)
     String email;
     @Column(name = "email-verified")

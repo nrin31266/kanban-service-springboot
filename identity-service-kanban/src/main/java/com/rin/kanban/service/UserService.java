@@ -2,6 +2,7 @@ package com.rin.kanban.service;
 
 import com.rin.envent.dto.NotificationEvent;
 import com.rin.kanban.dto.request.CreateUserRequest;
+import com.rin.kanban.dto.request.ProfileCreationRequest;
 import com.rin.kanban.dto.response.OtpResponse;
 import com.rin.kanban.dto.response.UserInfoResponse;
 import com.rin.kanban.dto.response.UserResponse;
@@ -13,6 +14,7 @@ import com.rin.kanban.mapper.UserMapper;
 import com.rin.kanban.repository.OtpRepository;
 import com.rin.kanban.repository.RoleRepository;
 import com.rin.kanban.repository.UserRepository;
+import com.rin.kanban.repository.httpclient.ProfileClient;
 import com.rin.kanban.utils.OtpGenerator;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,14 +42,17 @@ public class UserService {
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
     OtpService otpService;
+    ProfileClient profileClient;
 
-
+    @Transactional
     public UserResponse createUser(CreateUserRequest request) {
         if(userRepository.findByEmail(request.getEmail()).isPresent()){
             throw new AppException(ErrorCode.EMAIL_EXISTS);
         }
         User user = userMapper.toUser(request);
+
         var userRole = new HashSet<Role>();
+
         userRole.add(roleRepository.findById("USER")
                 .orElseThrow(()->new AppException(ErrorCode.ROLE_NOT_FOUND)));
 
@@ -60,6 +66,14 @@ public class UserService {
         }catch (DataIntegrityViolationException e){
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
+
+        ProfileCreationRequest profileCreationRequest = ProfileCreationRequest.builder()
+                .userId(user.getId())
+                .name(request.getName())
+                .build();
+
+        profileClient.createUserProfile(profileCreationRequest);
+
         otpService.sendEmailVerifyByUser(user);
         return userMapper.toUserResponse(user);
     }

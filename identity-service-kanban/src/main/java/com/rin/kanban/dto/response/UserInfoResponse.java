@@ -18,7 +18,6 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserInfoResponse {
     String id;
-    String name;
     String email;
     Boolean emailVerified;
     Set<Role> roles;
