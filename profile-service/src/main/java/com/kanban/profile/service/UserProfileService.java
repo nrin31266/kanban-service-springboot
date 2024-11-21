@@ -1,6 +1,8 @@
 package com.kanban.profile.service;
 
+import com.kanban.profile.dto.request.ChangeAvatarRequest;
 import com.kanban.profile.dto.request.ProfileCreationRequest;
+import com.kanban.profile.dto.request.ProfileRequest;
 import com.kanban.profile.dto.response.UserProfileResponse;
 import com.kanban.profile.entity.Profile;
 import com.kanban.profile.exception.AppException;
@@ -33,6 +35,25 @@ public class UserProfileService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
         Profile profile = profileRepository.findByUserId(userId).orElseThrow(()->new AppException(ErrorCode.PROFILE_NOT_FOUND));
+        return profileMapper.toUserProfileResponse(profile);
+    }
+
+
+    public UserProfileResponse updateProfile(ProfileRequest request){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+        Profile profile = profileRepository.findByUserId(userId).orElseThrow(()->new AppException(ErrorCode.PROFILE_NOT_FOUND));
+        profileMapper.updateProfile(profile, request);
+        profileRepository.save(profile);
+        return profileMapper.toUserProfileResponse(profile);
+    }
+
+    public UserProfileResponse changeAvatar(ChangeAvatarRequest request){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+        Profile profile = profileRepository.findByUserId(userId).orElseThrow(()->new AppException(ErrorCode.PROFILE_NOT_FOUND));
+        profile.setAvatar(request.getAvatar());
+        profileRepository.save(profile);
         return profileMapper.toUserProfileResponse(profile);
     }
 }
