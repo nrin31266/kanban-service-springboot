@@ -1,6 +1,7 @@
 package com.rin.kanban.service;
 
 import com.rin.kanban.dto.PageResponse;
+import com.rin.kanban.dto.request.FilterProductsRequest;
 import com.rin.kanban.dto.request.ProductRequest;
 import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
@@ -68,27 +69,42 @@ public class ProductService {
 
     public ProductResponse getProduct(String productId) {
         ProductResponse productResponse = productMapper.toProductResponse(productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND)));
-        if(productResponse.getCategoryIds() != null){
-            List<CategoryResponse> categories = productResponse.getCategoryIds().stream().map((categoryId)-> categoryMapper.toCategoryResponse(categoryRepository.findById(categoryId).get())).collect(Collectors.toList());
+        if (productResponse.getCategoryIds() != null) {
+            List<CategoryResponse> categories = productResponse.getCategoryIds().stream().map((categoryId) -> categoryMapper.toCategoryResponse(categoryRepository.findById(categoryId).get())).collect(Collectors.toList());
             productResponse.setCategoryResponse(categories);
         }
-        if(productResponse.getSupplierId() != null){
+        if (productResponse.getSupplierId() != null) {
             productResponse.setSupplierResponse(suppliersMapper.toSupplierResponse(suppliersRepository.findById(productResponse.getSupplierId()).get()));
         }
         return productResponse;
     }
 
-    public List<ProductResponse> getProducts() {
-        List<Product> products = productRepository.findAll();
-        return products.stream().map(productMapper::toProductResponse).collect(Collectors.toList());
+    public List<ProductResponse> getProducts(int page, int size) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<Product> pageData = productRepository.findAllProducts(pageable);
+        return pageData.getContent().stream().map(productMapper::toProductResponse).collect(Collectors.toList());
     }
 
     public PageResponse<ProductResponse> getProductsPagination(int page, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         Pageable pageable = PageRequest.of(page - 1, size, sort);
         Page<Product> pageData = productRepository.findAllProducts(pageable);
-
         return getSubProductsByPage(pageData);
+    }
+
+    public PageResponse<ProductResponse> getProductsByFilterValues(FilterProductsRequest filterProductsRequest, int page, int size) {
+        Page<Product> pageData = productCustomRepository.searchProducts(filterProductsRequest, page, size);
+
+        List<ProductResponse> productResponses = pageData.getContent().stream().map(productMapper::toProductResponse).collect(Collectors.toList());
+
+        return PageResponse.<ProductResponse>builder()
+                .pageSize(pageData.getNumberOfElements())
+                .currentPage(pageData.getNumber() + 1)
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .data(productResponses)
+                .build();
     }
 
     public PageResponse<ProductResponse> getProductsPaginationAndTitle(int page, int size, String title) {
@@ -102,13 +118,13 @@ public class ProductService {
 
     private PageResponse<ProductResponse> getSubProductsByPage(Page<Product> pageData) {
 
-        List<ProductResponse> productResponses = pageData.getContent().stream().map((product)->{
+        List<ProductResponse> productResponses = pageData.getContent().stream().map((product) -> {
             ProductResponse productResponse = productMapper.toProductResponse(product);
-            if(productResponse.getCategoryIds() != null){
-                List<CategoryResponse> categories = productResponse.getCategoryIds().stream().map((categoryId)-> categoryMapper.toCategoryResponse(categoryRepository.findById(categoryId).get())).collect(Collectors.toList());
+            if (productResponse.getCategoryIds() != null) {
+                List<CategoryResponse> categories = productResponse.getCategoryIds().stream().map((categoryId) -> categoryMapper.toCategoryResponse(categoryRepository.findById(categoryId).get())).collect(Collectors.toList());
                 productResponse.setCategoryResponse(categories);
             }
-            if(productResponse.getSupplierId() != null){
+            if (productResponse.getSupplierId() != null) {
                 productResponse.setSupplierResponse(suppliersMapper.toSupplierResponse(suppliersRepository.findById(productResponse.getSupplierId()).get()));
             }
             return productResponse;
@@ -139,18 +155,18 @@ public class ProductService {
         productRepository.saveAll(productsToDelete);
     }
 
-    public PageResponse<ProductResponse> getProductsByFilterValues(ProductsFilterValuesRequest request) {
-        Page<Product> productPage = productCustomRepository.findAllByFilterValues(request);
-        log.info(productPage.getContent().toString());
-        return getSubProductsByPage(productPage);
-    }
+//    public PageResponse<ProductResponse> getProductsByFilterValues(ProductsFilterValuesRequest request) {
+//        Page<Product> productPage = productCustomRepository.findAllByFilterValues(request);
+//        log.info(productPage.getContent().toString());
+//        return getSubProductsByPage(productPage);
+//    }
 
     public List<ProductResponse> getBestsellerProducts() {
         //
         Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         Pageable pageable = PageRequest.of(0, 10, sort);
         Page<Product> pageData = productRepository.findAllProducts(pageable);
-        return pageData.getContent().stream().map((product)->{
+        return pageData.getContent().stream().map((product) -> {
             ProductResponse productResponse = productMapper.toProductResponse(product);
             productResponse.setMinPrice(getMinPrice(product.getId()));
             productResponse.setMaxPrice(getMaxPrice(product.getId()));
@@ -170,11 +186,11 @@ public class ProductService {
 
     public List<ProductResponse> getRelatedProducts(String productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-        if(product.getCategoryIds()!=null){
+        if (product.getCategoryIds() != null) {
             Pageable pageable = PageRequest.of(0, 4, Sort.by(Sort.Direction.DESC, "updatedAt"));
-            List<Product> relatedProducts = productRepository.findByCategoryIdsInAndNotDeleted( productId,product.getCategoryIds(), pageable);
+            List<Product> relatedProducts = productRepository.findByCategoryIdsInAndNotDeleted(productId, product.getCategoryIds(), pageable);
             log.info(relatedProducts.toString());
-            return  relatedProducts.stream().map((p)->{
+            return relatedProducts.stream().map((p) -> {
                 ProductResponse productResponse = productMapper.toProductResponse(p);
                 productResponse.setMinPrice(getMinPrice(p.getId()));
                 productResponse.setMaxPrice(getMaxPrice(p.getId()));

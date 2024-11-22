@@ -1,9 +1,13 @@
 package com.rin.kanban.repository.custom;
 
-import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
+import com.rin.kanban.dto.request.FilterProductsRequest;
 import com.rin.kanban.entity.Product;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+
 public interface ProductCustomRepository {
-    Page<Product> findAllByFilterValues(ProductsFilterValuesRequest productsFilterValuesRequest);
+    Page<Product> searchProducts(FilterProductsRequest filterRequest, int page, int size);
+
+
 }

@@ -2,6 +2,7 @@ package com.rin.kanban.controller;
 
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.PageResponse;
+import com.rin.kanban.dto.request.FilterProductsRequest;
 import com.rin.kanban.dto.request.ProductRequest;
 import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
@@ -15,7 +16,10 @@ import org.springframework.cloud.commons.security.ResourceServerTokenRelayAutoCo
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -34,16 +38,30 @@ public class ProductController {
     }
 
     @GetMapping
-    public ApiResponse<PageResponse<ProductResponse>> getProducts() {
-        List<ProductResponse> products = productService.getProducts();
+    public ApiResponse<PageResponse<ProductResponse>> getProducts(
+            @RequestParam(required = false) String categoryIds,  // Danh sách categoryIds
+            @RequestParam(required = false) String search,        // Từ khóa tìm kiếm
+            @RequestParam(required = false, name = "rate") Integer rate,             // Đánh giá sản phẩm
+            @RequestParam(required = false) BigDecimal maxPrice,  // Giá tối đa
+            @RequestParam(required = false) BigDecimal minPrice,  // Giá tối thiểu
+            @RequestParam(required = false) String supplierIds, // Danh sách nhà cung cấp
+            @RequestParam(defaultValue = "1") int page,           // Số trang
+            @RequestParam(defaultValue = "10") int size            // Kích thước trang
+    ) {
+
+        FilterProductsRequest filterRequest = FilterProductsRequest.builder()
+                .categoryIds(categoryIds)
+                .search(search)
+                .rate(rate)
+                .maxPrice(maxPrice)
+                .minPrice(minPrice)
+                .supplierIds(supplierIds)
+                .build();
+
+        log.info(filterRequest.toString());
+
         return ApiResponse.<PageResponse<ProductResponse>>builder()
-                .result(PageResponse.<ProductResponse>builder()
-                        .data(products)
-                        .pageSize(1)
-                        .currentPage(1)
-                        .totalPages(1)
-                        .totalElements(products.size())
-                        .build())
+                .result(productService.getProductsByFilterValues(filterRequest, page, size))
                 .build();
     }
 
@@ -95,13 +113,13 @@ public class ProductController {
                 .build();
     }
 
-    @PostMapping("/filter")
-    public ApiResponse<PageResponse<ProductResponse>> getProductsByFilter(@RequestBody @Validated ProductsFilterValuesRequest request) {
-        return ApiResponse.<PageResponse<ProductResponse>>builder()
-                .result(productService.getProductsByFilterValues(request))
-                .build();
-
-    }
+//    @PostMapping("/filter")
+//    public ApiResponse<PageResponse<ProductResponse>> getProductsByFilter(@RequestBody @Validated ProductsFilterValuesRequest request) {
+//        return ApiResponse.<PageResponse<ProductResponse>>builder()
+//                .result(productService.getProductsByFilterValues(request))
+//                .build();
+//
+//    }
 
     @GetMapping("/bestseller")
     public ApiResponse<List<ProductResponse>> getBestSellerProducts() {
