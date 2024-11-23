@@ -42,19 +42,19 @@ public class ProductController {
             @RequestParam(required = false) String categoryIds,  // Danh sách categoryIds
             @RequestParam(required = false) String search,        // Từ khóa tìm kiếm
             @RequestParam(required = false, name = "rate") Integer rate,             // Đánh giá sản phẩm
-            @RequestParam(required = false) BigDecimal maxPrice,  // Giá tối đa
-            @RequestParam(required = false) BigDecimal minPrice,  // Giá tối thiểu
+            @RequestParam(required = false) BigDecimal max,  // Giá tối đa
+            @RequestParam(required = false) BigDecimal min,  // Giá tối thiểu
             @RequestParam(required = false) String supplierIds, // Danh sách nhà cung cấp
             @RequestParam(defaultValue = "1") int page,           // Số trang
-            @RequestParam(defaultValue = "10") int size            // Kích thước trang
+            @RequestParam(defaultValue = "12") int size            // Kích thước trang
     ) {
 
         FilterProductsRequest filterRequest = FilterProductsRequest.builder()
                 .categoryIds(categoryIds)
                 .search(search)
                 .rate(rate)
-                .maxPrice(maxPrice)
-                .minPrice(minPrice)
+                .maxPrice(max)
+                .minPrice(min)
                 .supplierIds(supplierIds)
                 .build();
 

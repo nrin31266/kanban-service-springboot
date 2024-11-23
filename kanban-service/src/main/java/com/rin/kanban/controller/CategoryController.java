@@ -31,9 +31,17 @@ public class CategoryController {
     @GetMapping("/get-tree")
     public ApiResponse<List<SelectCategoryTreeResponse>> getCategories() {
         return ApiResponse.<List<SelectCategoryTreeResponse>>builder()
-                .result(categoryService.getAllCategoriesTree())
+                .result(categoryService.getAllCategoriesTree(false))
                 .build();
     }
+
+    @GetMapping("/get-menu-tree")
+    public ApiResponse<List<SelectCategoryTreeResponse>> getMenuTreeCategories() {
+        return ApiResponse.<List<SelectCategoryTreeResponse>>builder()
+                .result(categoryService.getAllCategoriesTree(true))
+                .build();
+    }
+
 
     @GetMapping("/table-data")
     public ApiResponse<List<CategoryTableResponse>> getCategoriesTableData() {
@@ -41,15 +49,16 @@ public class CategoryController {
                 .result(categoryService.getCategoriesTableData())
                 .build();
     }
+
     @GetMapping
-    public ApiResponse<PageResponse<CategoryResponse>> getAllCategories(
-            @RequestParam(value = "page", defaultValue = "1") Integer page,
-            @RequestParam(value = "size", defaultValue = "10") Integer size) {
-        return ApiResponse.<PageResponse<CategoryResponse>>builder()
-                .result(categoryService.getCategoriesByPageAndSize(page, size))
+    public ApiResponse<List<CategoryResponse>> getAllCategories(
+    ) {
+        return ApiResponse.<List<CategoryResponse>>builder()
+                .result(categoryService.getCategories())
                 .build();
 
     }
+
     @GetMapping("/root")
     public ApiResponse<List<CategoryResponse>> getRootCategory() {
         return ApiResponse.<List<CategoryResponse>>builder()

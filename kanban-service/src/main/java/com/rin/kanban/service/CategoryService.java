@@ -33,23 +33,29 @@ import java.util.*;
 public class CategoryService {
     CategoryRepository categoryRepository;
     CategoryMapper categoryMapper;
-    ProductRepository productRepository;
-    ProductMapper productMapper;
 
     public CategoryResponse addCategory(CategoryRequest request) {
         return categoryMapper.toCategoryResponse(categoryRepository.save(categoryMapper.toCategory(request)));
     }
 
-    public List<SelectCategoryTreeResponse> getAllCategoriesTree() {
+    public List<SelectCategoryTreeResponse> getAllCategoriesTree(boolean isMenu) {
         Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         List<Category> categories = categoryRepository.findAll(sort);
         Map<String, SelectCategoryTreeResponse> map = new HashMap<>();
         for (Category category : categories) {
-            map.put(category.getId(),
-                    SelectCategoryTreeResponse.builder()
-                            .value(category.getId())
-                            .title(category.getName())
-                            .build());
+            if (isMenu) {
+                map.put(category.getId(),
+                        SelectCategoryTreeResponse.builder()
+                                .key(category.getId())
+                                .label(category.getName())
+                                .build());
+            } else {
+                map.put(category.getId(),
+                        SelectCategoryTreeResponse.builder()
+                                .value(category.getId())
+                                .title(category.getName())
+                                .build());
+            }
         }
         List<SelectCategoryTreeResponse> categoriesTree = new ArrayList<>();
         for (Category category : categories) {
@@ -68,6 +74,7 @@ public class CategoryService {
         }
         return categoriesTree;
     }
+
 
     public List<CategoryTableResponse> getCategoriesTableData() {
         Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
@@ -96,17 +103,8 @@ public class CategoryService {
         return categoriesTable;
     }
 
-    public PageResponse<CategoryResponse> getCategoriesByPageAndSize(int page, int size) {
-        Sort sort = Sort.by("createdAt").descending();
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Category> pageData = categoryRepository.findAll(pageable);
-        return PageResponse.<CategoryResponse>builder()
-                .currentPage(pageData.getNumber() + 1)
-                .totalPages(pageData.getTotalPages())
-                .pageSize(pageData.getSize())
-                .totalElements(pageData.getTotalElements())
-                .data(pageData.getContent().stream().map(categoryMapper::toCategoryResponse).toList())
-                .build();
+    public List<CategoryResponse> getCategories() {
+        return categoryRepository.findAll().stream().map(categoryMapper::toCategoryResponse).toList();
     }
 
     public List<CategoryResponse> getRootCategories() {

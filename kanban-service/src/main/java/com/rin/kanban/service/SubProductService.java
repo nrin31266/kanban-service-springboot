@@ -4,6 +4,7 @@ import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.request.SubProductRequest;
 import com.rin.kanban.dto.request.UpdateSubProductRequest;
+import com.rin.kanban.dto.response.ProductMinMaxPriceResponse;
 import com.rin.kanban.dto.response.PromotionResponse;
 import com.rin.kanban.dto.response.SelectDataResponse;
 import com.rin.kanban.dto.response.SubProductResponse;
@@ -14,6 +15,7 @@ import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.SubProductMapper;
 import com.rin.kanban.repository.ProductRepository;
 import com.rin.kanban.repository.SubProductRepository;
+import com.rin.kanban.repository.custom.SubProductCustomRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -36,6 +38,16 @@ public class SubProductService {
     SubProductRepository subProductRepository;
     ProductRepository productRepository;
     SubProductMapper subProductMapper;
+    SubProductCustomRepository subProductCustomRepository;
+
+    public ProductMinMaxPriceResponse getMinMaxPrice() {
+        Optional<SubProduct> maxSub = subProductCustomRepository.findMaxPrice();
+        Optional<SubProduct> minSub = subProductCustomRepository.findMinPrice();
+        return ProductMinMaxPriceResponse.builder()
+                .max(maxSub.map(SubProduct::getPrice).orElse(null))
+                .min(minSub.map(SubProduct::getPrice).orElse(null))
+                .build();
+    }
 
     public SubProductResponse createSubProduct(SubProductRequest subProductRequest) {
         SubProduct subProduct = subProductMapper.toSubProduct(subProductRequest);

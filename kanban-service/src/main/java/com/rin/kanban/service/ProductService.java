@@ -3,17 +3,14 @@ package com.rin.kanban.service;
 import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.FilterProductsRequest;
 import com.rin.kanban.dto.request.ProductRequest;
-import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.response.*;
-import com.rin.kanban.entity.Category;
 import com.rin.kanban.entity.Product;
 import com.rin.kanban.entity.SubProduct;
 import com.rin.kanban.exception.AppException;
 import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.CategoryMapper;
 import com.rin.kanban.mapper.ProductMapper;
-import com.rin.kanban.mapper.SubProductMapper;
 import com.rin.kanban.mapper.SuppliersMapper;
 import com.rin.kanban.repository.CategoryRepository;
 import com.rin.kanban.repository.ProductRepository;
@@ -96,7 +93,12 @@ public class ProductService {
     public PageResponse<ProductResponse> getProductsByFilterValues(FilterProductsRequest filterProductsRequest, int page, int size) {
         Page<Product> pageData = productCustomRepository.searchProducts(filterProductsRequest, page, size);
 
-        List<ProductResponse> productResponses = pageData.getContent().stream().map(productMapper::toProductResponse).collect(Collectors.toList());
+        List<ProductResponse> productResponses = pageData.getContent().stream().map((product -> {
+            ProductResponse productResponse = productMapper.toProductResponse(product);
+            productResponse.setMinPrice(getMinPrice(product.getId()));
+            productResponse.setMaxPrice(getMaxPrice(product.getId()));
+            return productResponse;
+        })).collect(Collectors.toList());
 
         return PageResponse.<ProductResponse>builder()
                 .pageSize(pageData.getNumberOfElements())
@@ -175,12 +177,12 @@ public class ProductService {
     }
 
     private BigDecimal getMinPrice(String productId) {
-        Optional<SubProduct> maxPriceSubProduct = subProductCustomRepository.findMinPriceSubProduct(productId);
+        Optional<SubProduct> maxPriceSubProduct = subProductCustomRepository.findMinPrice(productId);
         return maxPriceSubProduct.map(SubProduct::getPrice).orElse(null);
     }
 
     private BigDecimal getMaxPrice(String productId) {
-        Optional<SubProduct> minPriceSubProduct = subProductCustomRepository.findMaxPriceSubProduct(productId);
+        Optional<SubProduct> minPriceSubProduct = subProductCustomRepository.findMaxPrice(productId);
         return minPriceSubProduct.map(SubProduct::getPrice).orElse(null);
     }
 

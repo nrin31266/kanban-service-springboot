@@ -5,6 +5,7 @@ import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.request.SubProductRequest;
 import com.rin.kanban.dto.request.UpdateSubProductRequest;
+import com.rin.kanban.dto.response.ProductMinMaxPriceResponse;
 import com.rin.kanban.dto.response.SelectDataResponse;
 import com.rin.kanban.dto.response.SubProductResponse;
 import com.rin.kanban.service.SubProductService;
@@ -60,6 +61,13 @@ public class SubProductController {
     public ApiResponse<SubProductResponse> updateSubProduct(@RequestBody UpdateSubProductRequest updateSubProductRequest, @PathVariable("subProductId") String subProductId) {
         return ApiResponse.<SubProductResponse>builder()
                 .result(subProductService.updateSubProduct(updateSubProductRequest, subProductId))
+                .build();
+    }
+
+    @GetMapping("/min-max-price")
+    public ApiResponse<ProductMinMaxPriceResponse> getMinMaxPrice() {
+        return ApiResponse.<ProductMinMaxPriceResponse>builder()
+                .result(subProductService.getMinMaxPrice())
                 .build();
     }
 }

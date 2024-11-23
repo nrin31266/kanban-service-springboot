@@ -39,5 +39,5 @@ public class Product {
     Instant updatedAt;
 
 //    // This field will contain result from lookup
-//    List<SubProduct> subProducts;
+    List<SubProduct> subProducts;
 }
