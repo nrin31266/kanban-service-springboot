@@ -43,6 +43,10 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
             query.addCriteria(Criteria.where("categoryIds").all(categoryIds));
         }
 
+        if(filterRequest.getSearch() != null) {
+            query.addCriteria(Criteria.where("slug").regex(".*" + filterRequest.getSearch() + ".*", "i"));
+        }
+
         query.with(Sort.by(Sort.Direction.DESC, "updatedAt"));
         long total = mongoTemplate.count(query, Product.class);
 
@@ -69,6 +73,10 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
             MatchOperation matchCategoryIds = Aggregation.match(Criteria.where("categoryIds").all(categoryIds));
             operations.add(matchCategoryIds);
         }
+        if(request.getSearch() != null) {
+            MatchOperation matchSearch = Aggregation.match(Criteria.where("slug").regex(".*" + request.getSearch() + ".*", "i"));
+            operations.add(matchSearch);
+        }
 
 
         AggregationOperation addFinalPriceField = Aggregation.addFields()
@@ -91,18 +99,8 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
                         }
                 )
                 .build();
-
-
-
-
-
-
+        
         operations.add(addFinalPriceField);
-
-
-        Aggregation aggregation1 = Aggregation.newAggregation(operations);
-        List<Product> productsBeforePagination = mongoTemplate.aggregate(aggregation1, "products", Product.class).getMappedResults();
-        log.info("Data after adding finalPrice field: {}", productsBeforePagination);  // Log toàn bộ dữ liệu trước phân trang
 
         // Kiểm tra ba trường hợp minPrice, maxPrice, và minPrice với maxPrice:
         if (request.getMinPrice() != null && request.getMaxPrice() != null) {
