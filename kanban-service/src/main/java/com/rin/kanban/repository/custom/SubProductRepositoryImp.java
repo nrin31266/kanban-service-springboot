@@ -52,21 +52,25 @@ public class SubProductRepositoryImp implements SubProductCustomRepository {
     private Optional<SubProduct> getEffectiveMinPrice(Query priceQuery, Query discountQuery) {
         SubProduct minPriceProduct = mongoTemplate.findOne(priceQuery, SubProduct.class);
         SubProduct minDiscountProduct = mongoTemplate.findOne(discountQuery, SubProduct.class);
-        log.info(minDiscountProduct.toString());
 
         if (minPriceProduct != null && minDiscountProduct != null) {
             BigDecimal price = minPriceProduct.getPrice();
             BigDecimal discount = minDiscountProduct.getDiscount();
 
             // Kiểm tra giá trị null của discount và price
-            if (price != null && discount != null && discount.compareTo(price) < 0) {
-                minDiscountProduct.setPrice(discount);
-                return Optional.of(minDiscountProduct);
+            if (price != null) {
+                if (discount != null && discount.compareTo(price) < 0) {
+                    minDiscountProduct.setPrice(discount);
+                    return Optional.of(minDiscountProduct);
+                }
+                return Optional.of(minPriceProduct); // Trả về sản phẩm với giá thấp nhất
             }
-            return Optional.of(minPriceProduct);
+        } else if (minPriceProduct != null) {
+            return Optional.of(minPriceProduct); // Nếu không có discount, trả về sản phẩm có giá thấp nhất
         }
-        return Optional.ofNullable(minPriceProduct);
+        return Optional.ofNullable(minDiscountProduct); // Trường hợp không có giá nhưng có discount
     }
+
 
 
 
@@ -99,6 +103,7 @@ public class SubProductRepositoryImp implements SubProductCustomRepository {
     private Query queryFindMinDiscount() {
         Query discountQuery = new Query();
         discountQuery.addCriteria(Criteria.where("isDeleted").ne(true));
+        discountQuery.addCriteria(Criteria.where("discount").ne(null));
         discountQuery.with(Sort.by(Sort.Direction.ASC, "discount"));
         discountQuery.limit(1);
         return discountQuery;

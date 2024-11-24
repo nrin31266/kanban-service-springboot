@@ -33,5 +33,8 @@ public class SubProduct {
     Instant createdAt;
     @LastModifiedDate
     Instant updatedAt;
+    //add field
+    @Field(targetType = FieldType.DECIMAL128)
+    Object finalPrice;
 
 }

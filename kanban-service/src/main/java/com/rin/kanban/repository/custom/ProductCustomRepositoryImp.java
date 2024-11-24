@@ -6,6 +6,7 @@ import com.rin.kanban.entity.Product;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.Decimal128;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -68,20 +69,66 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
             MatchOperation matchCategoryIds = Aggregation.match(Criteria.where("categoryIds").all(categoryIds));
             operations.add(matchCategoryIds);
         }
+
+
+        AggregationOperation addFinalPriceField = Aggregation.addFields()
+                .addField("subProducts")
+                .withValue(
+                        new AggregationExpression() {
+                            @Override
+                            public Document toDocument(AggregationOperationContext context) {
+                                return new Document("$map", new Document()
+                                        .append("input", "$subProducts")  // Lấy danh sách subProducts
+                                        .append("as", "subProduct")  // Đặt alias cho từng phần tử
+                                        .append("in", new Document("$mergeObjects", Arrays.asList(
+                                                "$$subProduct",  // Giữ lại tất cả các trường hiện tại của subProduct
+                                                new Document("finalPrice", new Document("$ifNull", Arrays.asList(
+                                                        "$$subProduct.discount",  // Kiểm tra nếu discount là null
+                                                        "$$subProduct.price"  // Dùng price nếu discount là null
+                                                )))
+                                        ))));
+                            }
+                        }
+                )
+                .build();
+
+
+
+
+
+
+        operations.add(addFinalPriceField);
+
+
+        Aggregation aggregation1 = Aggregation.newAggregation(operations);
+        List<Product> productsBeforePagination = mongoTemplate.aggregate(aggregation1, "products", Product.class).getMappedResults();
+        log.info("Data after adding finalPrice field: {}", productsBeforePagination);  // Log toàn bộ dữ liệu trước phân trang
+
+        // Kiểm tra ba trường hợp minPrice, maxPrice, và minPrice với maxPrice:
         if (request.getMinPrice() != null && request.getMaxPrice() != null) {
-            MatchOperation matchByPrice = Aggregation.match(Criteria.where("subProducts").elemMatch(Criteria.where("price")
-                    .gte(new Decimal128(request.getMinPrice()))
-                    .lte(new Decimal128(request.getMaxPrice()))));
-            operations.add(matchByPrice);
+            // Truy vấn với minPrice và maxPrice, và sử dụng `finalPrice` cho subProducts
+            MatchOperation matchByPriceRange = Aggregation.match(
+                    Criteria.where("subProducts.finalPrice")
+                            .gte(new Decimal128(request.getMinPrice()))
+                            .lte(new Decimal128(request.getMaxPrice()))
+            );
+            operations.add(matchByPriceRange);
         } else if (request.getMinPrice() != null) {
-            MatchOperation matchByMinPrice = Aggregation.match(Criteria.where("subProducts").elemMatch(Criteria.where("price")
-                    .gte(new Decimal128(request.getMinPrice()))));
+            // Truy vấn chỉ với minPrice, và sử dụng `finalPrice`
+            MatchOperation matchByMinPrice = Aggregation.match(
+                    Criteria.where("subProducts.finalPrice")
+                            .gte(new Decimal128(request.getMinPrice()))
+            );
             operations.add(matchByMinPrice);
         } else if (request.getMaxPrice() != null) {
-            MatchOperation matchByMaxPrice = Aggregation.match(Criteria.where("subProducts").elemMatch(Criteria.where("price")
-                    .lte(new Decimal128(request.getMaxPrice()))));
+            // Truy vấn chỉ với maxPrice, và sử dụng `finalPrice`
+            MatchOperation matchByMaxPrice = Aggregation.match(
+                    Criteria.where("subProducts.finalPrice")
+                            .lte(new Decimal128(request.getMaxPrice()))
+            );
             operations.add(matchByMaxPrice);
         }
+
         // Sắp xếp theo updatedAt theo thứ tự giảm dần
         operations.add(Aggregation.sort(Sort.by(Sort.Direction.DESC, "updatedAt")));
         // ** Step 1: Tính totalElements trước khi phân trang **
