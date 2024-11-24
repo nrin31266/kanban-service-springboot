@@ -89,30 +89,50 @@ public class PromotionService {
                 .build();
     }
 
+    // Kiểm tra tính hợp lệ của mã giảm giá
+    private void validateDiscountCode(Promotion promotion) {
+        if (promotion.getQuantity() < 1) {
+            throw new AppException(ErrorCode.PROMOTION_UN_STOCK);
+        } else if (Instant.now().isBefore(promotion.getStart())) {
+            throw new AppException(ErrorCode.DISCOUNT_NOT_YET_AVAILABLE);
+        } else if (Instant.now().isAfter(promotion.getEnd())) {
+            throw new AppException(ErrorCode.DISCOUNT_ENDED);
+        }
+    }
+
+    // Kiểm tra mã giảm giá
     public CheckDiscountCodeResponse checkDiscountCode(CheckDiscountCodeRequest request) {
         Optional<Promotion> optionalPromotion = promotionRepository.findByCode(request.getDiscountCode());
         CheckDiscountCodeResponse response = new CheckDiscountCodeResponse();
-        if(optionalPromotion.isPresent()){
+
+        if (optionalPromotion.isPresent()) {
             Promotion promotion = optionalPromotion.get();
-            if(promotion.getQuantity()<1){
-                response.setIsValid(false);
-                response.setMessage("Un stock");
-            }else if(Instant.now().isBefore(promotion.getStart())){
-                response.setIsValid(false);
-                response.setMessage("Discounts not yet available");
-            }else if(Instant.now().isAfter(promotion.getEnd())){
-                response.setIsValid(false);
-                response.setMessage("Discounts ended");
-            }else{
-                response.setIsValid(true);
-                response.setMessage("Ok");
-            }
-            response.setPromotionResponse(promotionMapper.toPromotionResponse(optionalPromotion.get()));
-        }else{
-            response.setIsValid(false);
-            response.setMessage("Invalid discount code");
+
+            // Kiểm tra các điều kiện của mã giảm giá
+            validateDiscountCode(promotion);
+
+            response.setIsValid(true);
+            response.setMessage("Ok");
+            response.setPromotionResponse(promotionMapper.toPromotionResponse(promotion));
+        } else {
+            throw new AppException(ErrorCode.PROMOTION_NOT_FOUND);
         }
         return response;
     }
+
+    // Sử dụng mã giảm giá
+    public CheckDiscountCodeResponse useDiscountCode(CheckDiscountCodeRequest request) {
+        CheckDiscountCodeResponse response = checkDiscountCode(request);
+
+        if (response.getIsValid()) {
+            // Giảm số lượng của mã giảm giá
+            Promotion promotion = promotionRepository.findByCode(request.getDiscountCode()).orElseThrow(() -> new AppException(ErrorCode.PROMOTION_NOT_FOUND));
+            promotion.setQuantity(promotion.getQuantity() - 1);
+            promotionRepository.save(promotion);
+        }
+
+        return response;
+    }
+
 
 }
