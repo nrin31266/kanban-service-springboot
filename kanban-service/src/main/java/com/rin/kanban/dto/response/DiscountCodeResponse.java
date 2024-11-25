@@ -1,0 +1,15 @@
+package com.rin.kanban.dto.response;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class DiscountCodeResponse {
+    Boolean isValid;
+    PromotionResponse promotionResponse;
+    String message;
+}

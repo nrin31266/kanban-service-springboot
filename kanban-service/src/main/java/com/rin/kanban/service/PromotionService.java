@@ -2,11 +2,11 @@ package com.rin.kanban.service;
 
 import com.rin.kanban.constant.DiscountType;
 import com.rin.kanban.dto.PageResponse;
-import com.rin.kanban.dto.request.CheckDiscountCodeRequest;
+import com.rin.kanban.dto.request.DiscountCodeRequest;
 import com.rin.kanban.dto.request.CreatePromotionRequest;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.request.UpdatePromotionRequest;
-import com.rin.kanban.dto.response.CheckDiscountCodeResponse;
+import com.rin.kanban.dto.response.DiscountCodeResponse;
 import com.rin.kanban.dto.response.PromotionResponse;
 import com.rin.kanban.entity.Promotion;
 import com.rin.kanban.exception.AppException;
@@ -89,7 +89,7 @@ public class PromotionService {
                 .build();
     }
 
-    // Kiểm tra tính hợp lệ của mã giảm giá
+
     private void validateDiscountCode(Promotion promotion) {
         if (promotion.getQuantity() < 1) {
             throw new AppException(ErrorCode.PROMOTION_UN_STOCK);
@@ -100,15 +100,12 @@ public class PromotionService {
         }
     }
 
-    // Kiểm tra mã giảm giá
-    public CheckDiscountCodeResponse checkDiscountCode(CheckDiscountCodeRequest request) {
+    public DiscountCodeResponse checkDiscountCode(DiscountCodeRequest request) {
         Optional<Promotion> optionalPromotion = promotionRepository.findByCode(request.getDiscountCode());
-        CheckDiscountCodeResponse response = new CheckDiscountCodeResponse();
+        DiscountCodeResponse response = new DiscountCodeResponse();
 
         if (optionalPromotion.isPresent()) {
             Promotion promotion = optionalPromotion.get();
-
-            // Kiểm tra các điều kiện của mã giảm giá
             validateDiscountCode(promotion);
 
             response.setIsValid(true);
@@ -120,14 +117,14 @@ public class PromotionService {
         return response;
     }
 
-    // Sử dụng mã giảm giá
-    public CheckDiscountCodeResponse useDiscountCode(CheckDiscountCodeRequest request) {
-        CheckDiscountCodeResponse response = checkDiscountCode(request);
+
+    public DiscountCodeResponse useDiscountCode(DiscountCodeRequest request) {
+        DiscountCodeResponse response = checkDiscountCode(request);
 
         if (response.getIsValid()) {
-            // Giảm số lượng của mã giảm giá
             Promotion promotion = promotionRepository.findByCode(request.getDiscountCode()).orElseThrow(() -> new AppException(ErrorCode.PROMOTION_NOT_FOUND));
             promotion.setQuantity(promotion.getQuantity() - 1);
+            promotion.setUsed((promotion.getUsed() != null) ? promotion.getUsed() + 1 : 1);
             promotionRepository.save(promotion);
         }
 

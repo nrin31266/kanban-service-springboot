@@ -1,6 +1,6 @@
 package com.rin.kanban.controller.internal;
 
-import com.rin.kanban.service.PromotionService;
+import com.rin.kanban.service.ProductService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -10,10 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/internal/promotions")
+@RequestMapping("/internal/products")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class InternalPromotionController {
-    PromotionService promotionService;
+public class InternalProductController {
+    ProductService productService;
+
 
 }

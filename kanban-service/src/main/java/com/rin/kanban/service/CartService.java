@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -99,9 +100,11 @@ public class CartService {
     }
 
     public void deleteCart(String subProductId, String createdBy) {
-        Cart cart = cartRepository.findCart(subProductId, createdBy).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
-        cartRepository.delete(cart);
+        Optional<Cart> cart = cartRepository.findCart(subProductId, createdBy);
+        log.info(cart.toString());
+        cart.ifPresent(cartRepository::delete);
     }
+
 
 
     public PageResponse<CartResponse> getCarts(int page, int size) {

@@ -1,9 +1,7 @@
 package com.rin.kanban.service;
 
 import com.rin.kanban.dto.PageResponse;
-import com.rin.kanban.dto.request.FilterProductsRequest;
-import com.rin.kanban.dto.request.ProductRequest;
-import com.rin.kanban.dto.request.SoftDeleteRequest;
+import com.rin.kanban.dto.request.*;
 import com.rin.kanban.dto.response.*;
 import com.rin.kanban.entity.Product;
 import com.rin.kanban.entity.SubProduct;
@@ -202,5 +200,8 @@ public class ProductService {
         }
         return new ArrayList<>();
     }
+
+
+
 
 }
