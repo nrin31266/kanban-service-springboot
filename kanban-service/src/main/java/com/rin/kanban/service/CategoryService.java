@@ -34,8 +34,11 @@ public class CategoryService {
     CategoryRepository categoryRepository;
     CategoryMapper categoryMapper;
 
+
     public CategoryResponse addCategory(CategoryRequest request) {
-        return categoryMapper.toCategoryResponse(categoryRepository.save(categoryMapper.toCategory(request)));
+        // Save category to database
+        Category category = categoryMapper.toCategory(request);
+        return categoryMapper.toCategoryResponse(categoryRepository.save(category));
     }
 
     public List<SelectCategoryTreeResponse> getAllCategoriesTree(boolean isMenu) {

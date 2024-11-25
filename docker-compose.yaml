@@ -1,23 +1,13 @@
-version: "3"
+version: "3.8"
 
+#networks:
+#  kanban-network:
+#    driver: bridge
 networks:
-  kanban-network:
-    driver: bridge
+  prj1:
+    external: true  # Chỉ định mạng bên ngoài
 
 services:
-  mongodb:
-    image: mongo:6.0
-    container_name: mongodb-kanban
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: nrin31266
-      MONGO_INITDB_ROOT_PASSWORD: 16092005
-      MONGO_INITDB_DATABASE: kanban
-    networks:
-      - kanban-network
   mysql:
     image: mysql:8.0
     container_name: mysql-kanban
@@ -31,7 +21,7 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
-      - kanban-network
+      - prj1
   kafka:
     image: 'bitnami/kafka:3.7.0'
     container_name: kafka-kanban
@@ -49,14 +39,14 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
     networks:
-      - kanban-network
+      - prj1
   mysqladmin:
     image: phpmyadmin/phpmyadmin:latest
     container_name: mysqladmin-kanban
     ports:
       - "8001:80"
     networks:
-      - kanban-network
+      - prj1
     environment:
       - PMA_HOST=mysql
       - PMA_POST=3306
@@ -65,3 +55,4 @@ services:
 volumes:
   mongo_data:
   mysql-data:
+  mongo_config:

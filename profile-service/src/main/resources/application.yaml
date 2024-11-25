@@ -8,8 +8,9 @@ spring:
     name: profile-service
   data:
     mongodb:
-      uri: mongodb://nrin31266:16092005@localhost:27017/kanban-profile?authSource=admin
+#      uri: mongodb://nrin31266:16092005@localhost:27017/kanban-profile?authSource=admin
       auto-index-creation: true
+      uri: mongodb+srv://nrin31266:16092005@cluster0.kdpwd.mongodb.net/kanban-profile?retryWrites=true&w=majority&appName=Cluster0
   kafka:
     bootstrap-servers: localhost:9094
     consumer:

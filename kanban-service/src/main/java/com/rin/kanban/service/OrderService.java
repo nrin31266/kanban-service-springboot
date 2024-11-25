@@ -112,7 +112,7 @@ public class OrderService {
             reduceProducts.add(OrderProductRequest.builder()
                     .count(item.getCount())
                     .price(subProduct.getDiscount() != null ? subProduct.getDiscount() : subProduct.getPrice())
-                    .subProductId(item.getProductId())
+                    .subProductId(item.getSubProductId())
                     .name(item.getName())
                     .imageUrl(item.getImageUrl())
                     .options(item.getOptions())

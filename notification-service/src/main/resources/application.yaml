@@ -12,8 +12,9 @@ spring:
     name: notification-service
   data:
     mongodb:
-      uri: mongodb://nrin31266:16092005@localhost:27017/kanban-notification?authSource=admin
+#      uri: mongodb://nrin31266:16092005@localhost:27017/kanban-notification?authSource=admin
       auto-index-creation: true
+      uri: mongodb+srv://nrin31266:16092005@cluster0.kdpwd.mongodb.net/kanban-notification?retryWrites=true&w=majority&appName=Cluster0
   kafka:
     bootstrap-servers: localhost:9094
     consumer:

@@ -101,7 +101,6 @@ public class CartService {
 
     public void deleteCart(String subProductId, String createdBy) {
         Optional<Cart> cart = cartRepository.findCart(subProductId, createdBy);
-        log.info(cart.toString());
         cart.ifPresent(cartRepository::delete);
     }
 

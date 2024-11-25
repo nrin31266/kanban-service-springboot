@@ -3,8 +3,9 @@ spring:
     name: kanban-service
   data:
     mongodb:
-      uri: mongodb://nrin31266:16092005@localhost:27017/kanban?authSource=admin
+#      uri: mongodb://nrin31266:16092005@localhost:27017/kanban?authSource=admin
       auto-index-creation: true
+      uri: mongodb+srv://nrin31266:16092005@cluster0.kdpwd.mongodb.net/kanban?retryWrites=true&w=majority&appName=Cluster0
 
 server:
   port: 3002
