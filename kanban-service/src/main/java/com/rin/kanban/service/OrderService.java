@@ -3,12 +3,14 @@ package com.rin.kanban.service;
 
 import com.rin.kanban.constant.DiscountType;
 import com.rin.kanban.constant.Status;
+import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.DiscountCodeRequest;
 import com.rin.kanban.dto.request.OrderProductRequest;
 import com.rin.kanban.dto.request.OrderRequest;
 import com.rin.kanban.dto.response.DiscountCodeResponse;
 import com.rin.kanban.dto.response.OrderProductResponse;
 import com.rin.kanban.dto.response.OrderResponse;
+import com.rin.kanban.dto.response.ProductResponse;
 import com.rin.kanban.entity.Order;
 import com.rin.kanban.entity.OrderProduct;
 import com.rin.kanban.entity.SubProduct;
@@ -25,6 +27,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -157,6 +162,33 @@ public class OrderService {
         List<OrderProduct> orderProducts = orderProductsRepository.findByOrderId(orderId);
         return orderProducts.stream().map(orderProductMapper::toOrderProductsResponse).toList();
     };
+
+    public PageResponse<OrderResponse> getOrderByStatus (String keyStatus, int page, int size) {
+        Sort sort;
+        Status status = Status.valueOf(keyStatus.toUpperCase());
+        if(status.equals(Status.PENDING)) {
+            sort = Sort.by(Sort.Direction.ASC, "updateAt");
+        }else{
+            sort = Sort.by(Sort.Direction.DESC, "updateAt");
+        }
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<Order> pageData = orderRepository.findByStatus(status,pageable);
+        List<OrderResponse> orderResponses = pageData.stream().map(orderMapper::toOrderResponse).toList();
+        orderResponses.stream().map(orderResponse -> {
+            orderResponse.setOrderProductResponses(getOrderProductsByOrderId(orderResponse.getId()));
+            return orderResponse;
+
+        }).collect(Collectors.toList());
+        return PageResponse.<OrderResponse>builder()
+                .pageSize(pageData.getSize())
+                .currentPage(pageData.getNumber() + 1)
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .data(orderResponses)
+                .build();
+    }
+
+//    public
 
 
 }

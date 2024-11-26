@@ -4,6 +4,7 @@ package com.rin.kanban.controller;
 
 import com.rin.kanban.constant.Status;
 import com.rin.kanban.dto.ApiResponse;
+import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.OrderRequest;
 import com.rin.kanban.dto.response.OrderResponse;
 import com.rin.kanban.service.OrderService;
@@ -36,5 +37,16 @@ public class OrderController {
             return ApiResponse.<List<OrderResponse>>builder()
                     .result(orderService.getOrdersByUserIdAndStatus(status))
                     .build();
+    }
+
+    @GetMapping("/ad")
+    public ApiResponse<PageResponse<OrderResponse>> getOrders(
+            @RequestParam("page") int page,
+            @RequestParam("size") int size,
+            @RequestParam(value = "status", required = false) String status
+    ){
+        return ApiResponse.<PageResponse<OrderResponse>>builder()
+                .result(orderService.getOrderByStatus(status, page, size))
+                .build();
     }
 }
