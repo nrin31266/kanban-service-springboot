@@ -10,7 +10,12 @@ public enum Status {
     DELIVERED("DELIVERED", "Delivered"),
     COMPLETED("COMPLETED", "Completed"),
     CANCELLED("CANCELLED", "Cancelled"),
-    RETURNS("RETURNS", "Returns");
+    RETURNS("RETURNS", "Returns"),
+    DENY("DENY", "Deny"),
+    ;
+
+
+
 
     // Lấy key
     private final String key;

@@ -30,6 +30,8 @@ public class OrderResponse {
     BigDecimal amount;
     Instant createdAt;
     Instant updatedAt;
+    String created;
+    String updated;
 
     List<OrderProductResponse> orderProductResponses;
 }

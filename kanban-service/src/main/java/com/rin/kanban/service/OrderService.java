@@ -22,6 +22,7 @@ import com.rin.kanban.repository.OrderProductsRepository;
 import com.rin.kanban.repository.OrderRepository;
 import com.rin.kanban.repository.ProductRepository;
 import com.rin.kanban.repository.SubProductRepository;
+import com.rin.kanban.util.DateTimeFormatter;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -54,6 +55,7 @@ public class OrderService {
     PromotionService promotionService;
     SubProductRepository subProductRepository;
     CartService cartService;
+    DateTimeFormatter dateTimeFormatter;
 
 
     @Transactional(rollbackFor = AppException.class) // Đảm bảo rollback khi có lỗi
@@ -148,9 +150,21 @@ public class OrderService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Status status = Status.valueOf(keyStatus.toUpperCase());
         String userId = authentication.getName();
-        List<Order> orders= orderRepository.findByUserIdAndStatusOrderByUpdatedAtDesc(userId, status);
+        Sort sort;
+        if(status.equals(Status.PENDING)) {
+            sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        }else{
+            sort = Sort.by(Sort.Direction.DESC, "updatedAt");
+        }
+        List<Order> orders= orderRepository.findByUserIdAndStatus(userId, status, sort);
+        return changeOrderResponse(orders);
+    }
+
+    private List<OrderResponse> changeOrderResponse(List<Order> orders) {
         List<OrderResponse> orderResponses = orders.stream().map(orderMapper::toOrderResponse).toList();
         orderResponses.stream().map(orderResponse -> {
+            orderResponse.setCreated(dateTimeFormatter.formatDate(orderResponse.getCreatedAt()));
+            orderResponse.setUpdated(dateTimeFormatter.formatDate(orderResponse.getUpdatedAt()));
             orderResponse.setOrderProductResponses(getOrderProductsByOrderId(orderResponse.getId()));
             return orderResponse;
 
@@ -167,28 +181,31 @@ public class OrderService {
         Sort sort;
         Status status = Status.valueOf(keyStatus.toUpperCase());
         if(status.equals(Status.PENDING)) {
-            sort = Sort.by(Sort.Direction.ASC, "updateAt");
+            sort = Sort.by(Sort.Direction.ASC, "createdAt");
         }else{
-            sort = Sort.by(Sort.Direction.DESC, "updateAt");
+            sort = Sort.by(Sort.Direction.DESC, "updatedAt");
         }
         Pageable pageable = PageRequest.of(page - 1, size, sort);
         Page<Order> pageData = orderRepository.findByStatus(status,pageable);
-        List<OrderResponse> orderResponses = pageData.stream().map(orderMapper::toOrderResponse).toList();
-        orderResponses.stream().map(orderResponse -> {
-            orderResponse.setOrderProductResponses(getOrderProductsByOrderId(orderResponse.getId()));
-            return orderResponse;
 
-        }).collect(Collectors.toList());
+
+
         return PageResponse.<OrderResponse>builder()
                 .pageSize(pageData.getSize())
                 .currentPage(pageData.getNumber() + 1)
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .data(orderResponses)
+                .data(changeOrderResponse(pageData.getContent()))
                 .build();
     }
 
-//    public
+
+    public void updateOrderStatus(String keyStatus, String orderId) {
+        Status status = Status.valueOf(keyStatus.toUpperCase());
+        Order order = orderRepository.findById(orderId).orElseThrow(()-> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        order.setStatus(status);
+        orderRepository.save(order);
+    }
 
 
 }

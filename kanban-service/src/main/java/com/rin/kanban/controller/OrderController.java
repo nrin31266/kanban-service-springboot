@@ -42,11 +42,20 @@ public class OrderController {
     @GetMapping("/ad")
     public ApiResponse<PageResponse<OrderResponse>> getOrders(
             @RequestParam("page") int page,
-            @RequestParam("size") int size,
+            @RequestParam(value = "size", required = false, defaultValue = "6") int size,
             @RequestParam(value = "status", required = false) String status
     ){
         return ApiResponse.<PageResponse<OrderResponse>>builder()
                 .result(orderService.getOrderByStatus(status, page, size))
                 .build();
+    }
+
+    @PutMapping("/status/{orderId}/{status}")
+    public ApiResponse updateOrderStatus(
+            @PathVariable("orderId") String orderId,
+            @PathVariable("status") String status
+    ){
+        orderService.updateOrderStatus(orderId, status);
+        return ApiResponse.builder().build();
     }
 }

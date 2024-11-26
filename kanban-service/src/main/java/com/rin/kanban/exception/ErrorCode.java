@@ -27,6 +27,7 @@ public enum ErrorCode {
     DISCOUNT_NOT_YET_AVAILABLE(10028, "Discount not yet available", HttpStatus.CONFLICT),
     DISCOUNT_ENDED(10029, "Discount ended", HttpStatus.CONFLICT),
     PRODUCT_UN_STOCK(10030, "Product un stock", HttpStatus.CONFLICT),
+    ORDER_NOT_FOUND(10031, "Order not found", HttpStatus.NOT_FOUND),
     ;
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;
