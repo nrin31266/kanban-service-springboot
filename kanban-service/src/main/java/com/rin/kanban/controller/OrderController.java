@@ -2,6 +2,7 @@ package com.rin.kanban.controller;
 
 
 
+import com.rin.kanban.constant.Status;
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.request.OrderRequest;
 import com.rin.kanban.dto.response.OrderResponse;
@@ -10,10 +11,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -27,5 +27,14 @@ public class OrderController {
         return ApiResponse.<OrderResponse>builder()
                 .result(orderService.createOrder(orderRequest))
                 .build();
+    }
+
+    @GetMapping
+    public ApiResponse<List<OrderResponse>> getCustomerOrders(
+            @RequestParam("status") String status
+            ) {
+            return ApiResponse.<List<OrderResponse>>builder()
+                    .result(orderService.getOrdersByUserIdAndStatus(status))
+                    .build();
     }
 }

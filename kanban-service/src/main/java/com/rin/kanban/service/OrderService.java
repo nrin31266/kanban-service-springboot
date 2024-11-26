@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -47,6 +49,7 @@ public class OrderService {
     PromotionService promotionService;
     SubProductRepository subProductRepository;
     CartService cartService;
+
 
     @Transactional(rollbackFor = AppException.class) // Đảm bảo rollback khi có lỗi
     public OrderResponse createOrder(OrderRequest orderRequest) {
@@ -125,7 +128,7 @@ public class OrderService {
     }
 
 
-    private static BigDecimal getReductionAmount(DiscountCodeResponse discountResponse, Order order) {
+    private BigDecimal getReductionAmount(DiscountCodeResponse discountResponse, Order order) {
         BigDecimal discountAmount = BigDecimal.valueOf(0);
         if (discountResponse.getPromotionResponse().getDiscountType().equals(DiscountType.FIXED_AMOUNT)) {
             discountAmount = discountResponse.getPromotionResponse().getValue();
@@ -135,6 +138,25 @@ public class OrderService {
         }
         return discountAmount;
     }
+
+    public List<OrderResponse> getOrdersByUserIdAndStatus(String keyStatus) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Status status = Status.valueOf(keyStatus.toUpperCase());
+        String userId = authentication.getName();
+        List<Order> orders= orderRepository.findByUserIdAndStatusOrderByUpdatedAtDesc(userId, status);
+        List<OrderResponse> orderResponses = orders.stream().map(orderMapper::toOrderResponse).toList();
+        orderResponses.stream().map(orderResponse -> {
+            orderResponse.setOrderProductResponses(getOrderProductsByOrderId(orderResponse.getId()));
+            return orderResponse;
+
+        }).collect(Collectors.toList());
+        return orderResponses;
+    }
+
+    private List<OrderProductResponse> getOrderProductsByOrderId(String orderId) {
+        List<OrderProduct> orderProducts = orderProductsRepository.findByOrderId(orderId);
+        return orderProducts.stream().map(orderProductMapper::toOrderProductsResponse).toList();
+    };
 
 
 }

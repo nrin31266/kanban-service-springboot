@@ -8,7 +8,9 @@ public enum Status {
     CONFIRMED("CONFIRMED", "Confirmed"),
     SHIPPING("SHIPPING", "Shipping"),
     DELIVERED("DELIVERED", "Delivered"),
-    COMPLETED("COMPLETED", "Completed");
+    COMPLETED("COMPLETED", "Completed"),
+    CANCELLED("CANCELLED", "Cancelled"),
+    RETURNS("RETURNS", "Returns");
 
     // Lấy key
     private final String key;
