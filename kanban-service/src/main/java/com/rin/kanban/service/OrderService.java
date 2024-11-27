@@ -203,6 +203,9 @@ public class OrderService {
     public void updateOrderStatus(String keyStatus, String orderId) {
         Status status = Status.valueOf(keyStatus.toUpperCase());
         Order order = orderRepository.findById(orderId).orElseThrow(()-> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        if(status.equals(Status.COMPLETED)) {
+            order.setIsComplete(true);
+        }
         order.setStatus(status);
         orderRepository.save(order);
     }

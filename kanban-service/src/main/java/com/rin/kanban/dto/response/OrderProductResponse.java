@@ -22,6 +22,7 @@ public class OrderProductResponse {
     BigDecimal price;
     int count;
     Map<String, String> options;
+    Boolean isRating;
     String imageUrl;
     String updatedAt;
     String createdAt;

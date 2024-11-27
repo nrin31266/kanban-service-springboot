@@ -28,6 +28,9 @@ public enum ErrorCode {
     DISCOUNT_ENDED(10029, "Discount ended", HttpStatus.CONFLICT),
     PRODUCT_UN_STOCK(10030, "Product un stock", HttpStatus.CONFLICT),
     ORDER_NOT_FOUND(10031, "Order not found", HttpStatus.NOT_FOUND),
+    CAN_NOT_RATING(10032, "Can not rating", HttpStatus.CONFLICT),
+    RATING_NOT_FOUND(10033, "Rating not found", HttpStatus.NOT_FOUND),
+    RATING_EXISTED(10034, "Rating existed", HttpStatus.CONFLICT),
     ;
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
         this.code = code;
