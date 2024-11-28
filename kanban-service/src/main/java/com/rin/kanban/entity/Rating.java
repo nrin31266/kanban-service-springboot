@@ -25,6 +25,7 @@ public class Rating {
     String orderProductId;
     int rating;
     String comment;
+    String reply;
     List<String> imageUrls;
     String userId;
     @CreatedDate

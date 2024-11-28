@@ -3,6 +3,7 @@ package com.rin.kanban.service;
 import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.httpclient.UserProfileResponse;
 import com.rin.kanban.dto.request.RatingRequest;
+import com.rin.kanban.dto.request.ReplyRatingRequest;
 import com.rin.kanban.dto.response.OrderResponse;
 import com.rin.kanban.dto.response.RatingResponse;
 import com.rin.kanban.entity.Order;
@@ -97,6 +98,13 @@ public class RatingService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
         return authentication.getName();
+    }
+
+    public RatingResponse replyRating(ReplyRatingRequest request, String ratingId) {
+        Rating rating = ratingRepository.findById(ratingId).orElseThrow(() -> new AppException(ErrorCode.RATING_NOT_FOUND));
+        rating.setReply(request.getReply());
+        ratingRepository.save(rating);
+        return ratingMapper.toRatingResponse(rating);
     }
 
 

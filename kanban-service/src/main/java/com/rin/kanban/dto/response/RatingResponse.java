@@ -29,6 +29,7 @@ public class RatingResponse {
     Instant updatedAt;
     String created;
     String updated;
+    String reply;
     //
     String avatar;
     String name;

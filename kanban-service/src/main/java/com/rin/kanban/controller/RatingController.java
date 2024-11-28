@@ -3,6 +3,7 @@ package com.rin.kanban.controller;
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.RatingRequest;
+import com.rin.kanban.dto.request.ReplyRatingRequest;
 import com.rin.kanban.dto.response.RatingResponse;
 import com.rin.kanban.service.RatingService;
 import lombok.AccessLevel;
@@ -42,6 +43,13 @@ public class RatingController {
     ){
         return ApiResponse.<PageResponse<RatingResponse>>builder()
                 .result(ratingService.getRatings(productId, page, size))
+                .build();
+    }
+
+    @PutMapping("/reply/{ratingId}")
+    public ApiResponse<RatingResponse> replyRating(@RequestBody ReplyRatingRequest request, @PathVariable("ratingId") String ratingId) {
+        return ApiResponse.<RatingResponse>builder()
+                .result(ratingService.replyRating(request, ratingId))
                 .build();
     }
 
