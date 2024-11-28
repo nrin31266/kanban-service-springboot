@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @Builder
@@ -19,10 +20,17 @@ public class RatingResponse {
     String subProductId;
     String productId;
     String orderId;
+    String orderProductId;
     int rating;
     String comment;
-    String imageUrls;
+    List<String> imageUrls;
     String userId;
     Instant createdAt;
     Instant updatedAt;
+    String created;
+    String updated;
+    //
+    String avatar;
+    String name;
+
 }

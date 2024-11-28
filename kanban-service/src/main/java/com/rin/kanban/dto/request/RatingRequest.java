@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.time.Instant;
+import java.util.List;
 
 
 @Data
@@ -19,7 +20,9 @@ public class RatingRequest {
     String subProductId;
     String productId;
     String orderId;
+    String orderProductId;
+//    String pho
     int rating;
     String comment;
-    String imageUrls;
+    List<String> imageUrls;
 }

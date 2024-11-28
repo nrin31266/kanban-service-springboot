@@ -29,6 +29,7 @@ public class OrderResponse {
     BigDecimal reduction;
     BigDecimal amount;
     Instant createdAt;
+    Boolean isComplete;
     Instant updatedAt;
     String created;
     String updated;

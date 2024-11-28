@@ -210,5 +210,12 @@ public class OrderService {
         orderRepository.save(order);
     }
 
+    public OrderResponse getOrder(String orderId){
+        Order order = orderRepository.findById(orderId).orElseThrow(()-> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        OrderResponse orderResponse = orderMapper.toOrderResponse(order);
+        orderResponse.setOrderProductResponses(getOrderProductsByOrderId(orderId));
+        return orderResponse;
+    }
+
 
 }

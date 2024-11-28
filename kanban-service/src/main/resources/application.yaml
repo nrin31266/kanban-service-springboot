@@ -11,3 +11,7 @@ server:
   port: 3002
   servlet:
     context-path: /kanban
+
+app:
+  services:
+    profiles: http://localhost:3005/profiles

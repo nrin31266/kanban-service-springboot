@@ -6,6 +6,7 @@ import com.rin.kanban.constant.Status;
 import com.rin.kanban.dto.ApiResponse;
 import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.OrderRequest;
+import com.rin.kanban.dto.response.OrderProductResponse;
 import com.rin.kanban.dto.response.OrderResponse;
 import com.rin.kanban.service.OrderService;
 import lombok.AccessLevel;
@@ -32,7 +33,7 @@ public class OrderController {
 
     @GetMapping
     public ApiResponse<List<OrderResponse>> getCustomerOrders(
-            @RequestParam("status") String status
+            @RequestParam(value = "status", required = false, defaultValue = "PENDING") String status
             ) {
             return ApiResponse.<List<OrderResponse>>builder()
                     .result(orderService.getOrdersByUserIdAndStatus(status))
@@ -57,5 +58,12 @@ public class OrderController {
     ){
         orderService.updateOrderStatus(orderId, status);
         return ApiResponse.builder().build();
+    }
+
+    @GetMapping("/{orderId}")
+    public ApiResponse<OrderResponse> getOrder(@PathVariable("orderId") String orderId) {
+        return ApiResponse.<OrderResponse>builder()
+                .result(orderService.getOrder(orderId))
+                .build();
     }
 }

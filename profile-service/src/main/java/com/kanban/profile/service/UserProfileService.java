@@ -38,6 +38,11 @@ public class UserProfileService {
         return profileMapper.toUserProfileResponse(profile);
     }
 
+    public UserProfileResponse getUserProfileByUserId(String userId) {
+        Profile profile = profileRepository.findByUserId(userId).orElseThrow(()->new AppException(ErrorCode.PROFILE_NOT_FOUND));
+        return profileMapper.toUserProfileResponse(profile);
+    }
+
 
     public UserProfileResponse updateProfile(ProfileRequest request){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

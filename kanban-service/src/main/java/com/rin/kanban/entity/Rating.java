@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.time.Instant;
+import java.util.List;
 
 @Document("rating")
 @Data
@@ -21,9 +22,10 @@ public class Rating {
     String subProductId;
     String productId;
     String orderId;
+    String orderProductId;
     int rating;
     String comment;
-    String imageUrls;
+    List<String> imageUrls;
     String userId;
     @CreatedDate
     Instant createdAt;
