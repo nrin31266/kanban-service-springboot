@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Data
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class WardResponse {
     String id;
     private String name;
