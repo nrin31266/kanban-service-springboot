@@ -36,4 +36,10 @@ spring:
             - Path=${app.api-prefix}/profiles/**
           filters:
             - StripPrefix=2
+        - id: location-service
+          uri: http://localhost:3007
+          predicates:
+            - Path=${app.api-prefix}/locations/**
+          filters:
+            - StripPrefix=2
 

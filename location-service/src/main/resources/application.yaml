@@ -1,0 +1,26 @@
+server:
+  port: 3007
+  servlet:
+    context-path: /locations
+
+spring:
+  application:
+    name: location-service
+  data:
+    mongodb:
+#      uri: mongodb://nrin31266:16092005@localhost:27017/kanban-profile?authSource=admin
+      auto-index-creation: true
+      uri: mongodb+srv://nrin31266:16092005@cluster0.kdpwd.mongodb.net/location?retryWrites=true&w=majority&appName=Cluster0
+#  kafka:
+#    bootstrap-servers: localhost:9094
+#    consumer:
+#      group-id: profile-group
+#      auto-offset-reset: earliest
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#      properties:
+#        spring.json.trusted.packages: "*"
+#    producer:
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
