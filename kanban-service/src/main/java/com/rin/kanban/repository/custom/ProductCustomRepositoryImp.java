@@ -3,6 +3,8 @@ package com.rin.kanban.repository.custom;
 import com.rin.kanban.dto.request.FilterProductsRequest;
 import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
 import com.rin.kanban.entity.Product;
+import com.rin.kanban.pojo.BestSellerResult;
+import com.rin.kanban.pojo.RatingResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
@@ -21,6 +23,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,36 +33,7 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
     private final MongoTemplate mongoTemplate;
 
     @Override
-    public Page<Product> searchProducts(FilterProductsRequest filterRequest, int page, int size) {
-        if (filterRequest.getMaxPrice() != null || filterRequest.getMinPrice() != null) {
-            return searchLookupDocumentSubProduct(filterRequest, page, size);
-        }
-
-        Query query = new Query();
-        query.addCriteria(Criteria.where("isDeleted").ne(true));
-
-        if (filterRequest.getCategoryIds() != null) {
-            List<String> categoryIds = Arrays.asList(filterRequest.getCategoryIds().split(","));
-            query.addCriteria(Criteria.where("categoryIds").all(categoryIds));
-        }
-
-        if(filterRequest.getSearch() != null) {
-            query.addCriteria(Criteria.where("slug").regex(".*" + filterRequest.getSearch() + ".*", "i"));
-        }
-
-        query.with(Sort.by(Sort.Direction.DESC, "updatedAt"));
-        long total = mongoTemplate.count(query, Product.class);
-
-        query.skip((long) (page - 1) * size);
-        query.limit(size);
-
-        List<Product> products = mongoTemplate.find(query, Product.class);
-        Pageable pageable = PageRequest.of(page - 1, size);
-
-        return new PageImpl<>(products, pageable, total);
-    }
-
-    private Page<Product> searchLookupDocumentSubProduct(FilterProductsRequest request, int page, int size) {
+    public Page<Product> searchProducts(FilterProductsRequest request, int page, int size) {
         // Tạo danh sách các AggregationOperation
         List<AggregationOperation> operations = new ArrayList<>();
         // Lookup: Thực hiện join với collection sub-products
@@ -77,8 +51,6 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
             MatchOperation matchSearch = Aggregation.match(Criteria.where("slug").regex(".*" + request.getSearch() + ".*", "i"));
             operations.add(matchSearch);
         }
-
-
         AggregationOperation addFinalPriceField = Aggregation.addFields()
                 .addField("subProducts")
                 .withValue(
@@ -99,9 +71,8 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
                         }
                 )
                 .build();
-        
-        operations.add(addFinalPriceField);
 
+        operations.add(addFinalPriceField);
         // Kiểm tra ba trường hợp minPrice, maxPrice, và minPrice với maxPrice:
         if (request.getMinPrice() != null && request.getMaxPrice() != null) {
             // Truy vấn với minPrice và maxPrice, và sử dụng `finalPrice` cho subProducts
@@ -152,12 +123,44 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
         operations.add(Aggregation.skip((long) (page - 1) * size));
         operations.add(Aggregation.limit(size));
         Aggregation aggregation = Aggregation.newAggregation(operations);
+
+
+
+
+
+
         List<Product> products = mongoTemplate.aggregate(aggregation, "products", Product.class).getMappedResults();
         // Phân trang với Pageable
         Pageable pageable = PageRequest.of(page - 1, size);
         return PageableExecutionUtils.getPage(products, pageable, () -> totalElements);
     }
 
+
+
+//    private Page<Product> searchLookupDocumentSubProduct(FilterProductsRequest request, int page, int size) {
+//
+//    }
+
+    @Override
+    public List<String> getTopSoldProducts() {
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(Criteria.where("isComplete").is(true)), // Lọc đơn hàng đã hoàn thành
+                Aggregation.lookup("order-product", "_id", "orderId", "orderProducts"), // Lookup sang order-products
+                Aggregation.unwind("orderProducts"), // Tách orderProducts
+                Aggregation.group("orderProducts.productId") // Nhóm theo productId
+                        .sum("orderProducts.count").as("totalSold"), // Tổng số lượng đã bán
+                Aggregation.sort(Sort.Direction.DESC, "totalSold"), // Sắp xếp giảm dần
+                Aggregation.limit(12) // Lấy 12 sản phẩm đầu tiên
+        );
+
+//        AggregationResults<BestSellerResult> results = mongoTemplate.aggregate(aggregation, "orders", BestSellerResult.class);
+        AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "orders", Document.class);
+
+        // Trích xuất danh sách productId từ kết quả
+        return results.getMappedResults().stream()
+                .map(doc -> doc.getString("_id")) // Lấy _id (productId)
+                .collect(Collectors.toList());
+    }
 
 //
 }

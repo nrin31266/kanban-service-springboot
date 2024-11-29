@@ -1,5 +1,6 @@
 package com.rin.kanban.repository.custom;
 
+import com.rin.kanban.pojo.BestSellerResult;
 import com.rin.kanban.pojo.RatingResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Repository
@@ -49,4 +51,6 @@ public class RatingCustomRepositoryImp implements RatingCustomRepository {
 
         return new RatingResult(0, BigDecimal.ZERO);
     }
+
+
 }

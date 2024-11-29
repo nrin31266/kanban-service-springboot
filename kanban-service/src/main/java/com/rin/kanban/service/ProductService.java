@@ -3,8 +3,10 @@ package com.rin.kanban.service;
 import com.rin.kanban.dto.PageResponse;
 import com.rin.kanban.dto.request.*;
 import com.rin.kanban.dto.response.*;
+import com.rin.kanban.entity.Category;
 import com.rin.kanban.entity.Product;
 import com.rin.kanban.entity.SubProduct;
+import com.rin.kanban.entity.Supplier;
 import com.rin.kanban.exception.AppException;
 import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.CategoryMapper;
@@ -73,46 +75,10 @@ public class ProductService {
 
     }
 
-    private ProductResponse convertProductResponse(Product product) {
-        ProductResponse productResponse = productMapper.toProductResponse(product);
-        if (productResponse.getCategoryIds() != null) {
-            List<CategoryResponse> categories = productResponse.getCategoryIds().stream().map((categoryId) -> categoryMapper.toCategoryResponse(categoryRepository.findById(categoryId).get())).collect(Collectors.toList());
-            productResponse.setCategoryResponse(categories);
-        }
-        if (productResponse.getSupplierId() != null) {
-            productResponse.setSupplierResponse(suppliersMapper.toSupplierResponse(suppliersRepository.findById(productResponse.getSupplierId()).get()));
-        }
-        productResponse.setTotalSold(orderCustomRepository.getSoldCountByProductId(product.getId()));
-        RatingResult ratingResult = ratingCustomRepository.getRatingByProductId(product.getId());
-        productResponse.setCountRating(ratingResult.getCountRating());
-        productResponse.setAverageRating(ratingResult.getAverageRating());
-
-        return productResponse;
-    }
-
-    public List<ProductResponse> getProducts(int page, int size) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Product> pageData = productRepository.findAllProducts(pageable);
-        return pageData.getContent().stream().map(productMapper::toProductResponse).collect(Collectors.toList());
-    }
-
-    public PageResponse<ProductResponse> getProductsPagination(int page, int size) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Product> pageData = productRepository.findAllProducts(pageable);
-        return getSubProductsByPage(pageData);
-    }
-
     public PageResponse<ProductResponse> getProductsByFilterValues(FilterProductsRequest filterProductsRequest, int page, int size) {
         Page<Product> pageData = productCustomRepository.searchProducts(filterProductsRequest, page, size);
 
-        List<ProductResponse> productResponses = pageData.getContent().stream().map((product -> {
-            ProductResponse productResponse = productMapper.toProductResponse(product);
-            productResponse.setMinPrice(getMinPrice(product.getId()));
-            productResponse.setMaxPrice(getMaxPrice(product.getId()));
-            return productResponse;
-        })).collect(Collectors.toList());
+        List<ProductResponse> productResponses = pageData.getContent().stream().map(this::convertProductResponse).collect(Collectors.toList());
 
         return PageResponse.<ProductResponse>builder()
                 .pageSize(pageData.getNumberOfElements())
@@ -122,6 +88,50 @@ public class ProductService {
                 .data(productResponses)
                 .build();
     }
+
+    private ProductResponse convertProductResponse(Product product) {
+        ProductResponse productResponse = productMapper.toProductResponse(product);
+        // Truy vấn tất cả danh mục cần thiết chỉ một lần
+        if (productResponse.getCategoryIds() != null && !productResponse.getCategoryIds().isEmpty()) {
+            List<String> categoryIds = product.getCategoryIds();
+            List<Category> categories = categoryRepository.findAllById(categoryIds); // Truy vấn tất cả các category theo id
+            List<CategoryResponse> categoryResponses = categories.stream()
+                    .map(categoryMapper::toCategoryResponse)
+                    .collect(Collectors.toList());
+            productResponse.setCategoryResponse(categoryResponses);
+        }
+
+        // Truy vấn nhà cung cấp một lần
+        if (productResponse.getSupplierId() != null) {
+            Supplier supplier = suppliersRepository.findById(productResponse.getSupplierId()).orElse(null);
+            if (supplier != null) {
+                productResponse.setSupplierResponse(suppliersMapper.toSupplierResponse(supplier));
+            }
+        }
+        productResponse.setTotalSold(orderCustomRepository.getSoldCountByProductId(product.getId()));
+        RatingResult ratingResult = ratingCustomRepository.getRatingByProductId(product.getId());
+        productResponse.setCountRating(ratingResult.getCountRating());
+        productResponse.setAverageRating(ratingResult.getAverageRating());
+        productResponse.setMinPrice(getMinPrice(product.getId()));
+        productResponse.setMaxPrice(getMaxPrice(product.getId()));
+        return productResponse;
+    }
+
+//    public List<ProductResponse> getProducts(int page, int size) {
+//        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
+//        Pageable pageable = PageRequest.of(page - 1, size, sort);
+//        Page<Product> pageData = productRepository.findAllProducts(pageable);
+//        return pageData.getContent().stream().map(productMapper::toProductResponse).collect(Collectors.toList());
+//    }
+
+    public PageResponse<ProductResponse> getProductsPagination(int page, int size) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<Product> pageData = productRepository.findAllProducts(pageable);
+        return getSubProductsByPage(pageData);
+    }
+
+
 
     public PageResponse<ProductResponse> getProductsPaginationAndTitle(int page, int size, String title) {
         log.info(title);
@@ -169,15 +179,17 @@ public class ProductService {
 
     public List<ProductResponse> getBestsellerProducts() {
         //
-        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
-        Pageable pageable = PageRequest.of(0, 10, sort);
-        Page<Product> pageData = productRepository.findAllProducts(pageable);
-        return pageData.getContent().stream().map((product) -> {
-            ProductResponse productResponse = productMapper.toProductResponse(product);
-            productResponse.setMinPrice(getMinPrice(product.getId()));
-            productResponse.setMaxPrice(getMaxPrice(product.getId()));
-            return productResponse;
-        }).collect(Collectors.toList());
+        List<String> ids = productCustomRepository.getTopSoldProducts();
+        List<Product> products = productRepository.findAllById(ids);
+        // Sắp xếp lại sản phẩm theo thứ tự của ids
+        Map<String, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, product -> product));
+
+        return ids.stream()
+                .map(productMap::get)
+                .filter(Objects::nonNull) // Lọc sản phẩm không tồn tại (nếu có)
+                .map(this::convertProductResponse)
+                .collect(Collectors.toList());
     }
 
     private BigDecimal getMinPrice(String productId) {
@@ -195,14 +207,7 @@ public class ProductService {
         if (product.getCategoryIds() != null) {
             Pageable pageable = PageRequest.of(0, 4, Sort.by(Sort.Direction.DESC, "updatedAt"));
             List<Product> relatedProducts = productRepository.findByCategoryIdsInAndNotDeleted(productId, product.getCategoryIds(), pageable);
-            log.info(relatedProducts.toString());
-            return relatedProducts.stream().map((p) -> {
-                ProductResponse productResponse = productMapper.toProductResponse(p);
-                productResponse.setMinPrice(getMinPrice(p.getId()));
-                productResponse.setMaxPrice(getMaxPrice(p.getId()));
-                return productResponse;
-            }).collect(Collectors.toList());
-
+            return relatedProducts.stream().map(this::convertProductResponse).collect(Collectors.toList());
         }
         return new ArrayList<>();
     }

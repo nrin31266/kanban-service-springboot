@@ -17,6 +17,6 @@ public interface ProductRepository extends MongoRepository<Product, String> {
     Page<Product> findAllBySlugContaining(String slug, Pageable pageable);
 
     @Query("{'_id': {'$ne': ?0}, 'isDeleted': {'$in': [null, false]}, 'categoryIds': {'$in': ?1}}")
-    List<Product> findByCategoryIdsInAndNotDeleted(String productId, Set<String> categoryIds, Pageable pageable);
+    List<Product> findByCategoryIdsInAndNotDeleted(String productId, List<String> categoryIds, Pageable pageable);
 
 }
