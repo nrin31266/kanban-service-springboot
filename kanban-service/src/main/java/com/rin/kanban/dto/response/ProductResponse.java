@@ -21,6 +21,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductResponse {
     String id;
     String title;
@@ -35,12 +36,11 @@ public class ProductResponse {
     Instant createdAt;
     Instant updatedAt;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     SupplierResponse supplierResponse;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     List<CategoryResponse> categoryResponse;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     BigDecimal maxPrice;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     BigDecimal minPrice;
+    BigDecimal totalSold;
+
+
 }

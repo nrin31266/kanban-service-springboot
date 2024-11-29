@@ -14,6 +14,7 @@ import com.rin.kanban.repository.CategoryRepository;
 import com.rin.kanban.repository.ProductRepository;
 import com.rin.kanban.repository.SubProductRepository;
 import com.rin.kanban.repository.SuppliersRepository;
+import com.rin.kanban.repository.custom.OrderCustomRepository;
 import com.rin.kanban.repository.custom.ProductCustomRepository;
 import com.rin.kanban.repository.custom.SubProductCustomRepository;
 import lombok.AccessLevel;
@@ -45,6 +46,7 @@ public class ProductService {
     CategoryMapper categoryMapper;
     SuppliersMapper suppliersMapper;
     SuppliersRepository suppliersRepository;
+    OrderCustomRepository orderCustomRepository;
 
     public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = productMapper.toProduct(productRequest);
@@ -63,7 +65,13 @@ public class ProductService {
     }
 
     public ProductResponse getProduct(String productId) {
-        ProductResponse productResponse = productMapper.toProductResponse(productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND)));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+        return convertProductResponse(product);
+
+    }
+
+    private ProductResponse convertProductResponse(Product product) {
+        ProductResponse productResponse = productMapper.toProductResponse(product);
         if (productResponse.getCategoryIds() != null) {
             List<CategoryResponse> categories = productResponse.getCategoryIds().stream().map((categoryId) -> categoryMapper.toCategoryResponse(categoryRepository.findById(categoryId).get())).collect(Collectors.toList());
             productResponse.setCategoryResponse(categories);
@@ -71,6 +79,7 @@ public class ProductService {
         if (productResponse.getSupplierId() != null) {
             productResponse.setSupplierResponse(suppliersMapper.toSupplierResponse(suppliersRepository.findById(productResponse.getSupplierId()).get()));
         }
+        productResponse.setTotalSold(orderCustomRepository.getSoldCountByProductId(product.getId()));
         return productResponse;
     }
 
@@ -118,17 +127,7 @@ public class ProductService {
 
     private PageResponse<ProductResponse> getSubProductsByPage(Page<Product> pageData) {
 
-        List<ProductResponse> productResponses = pageData.getContent().stream().map((product) -> {
-            ProductResponse productResponse = productMapper.toProductResponse(product);
-            if (productResponse.getCategoryIds() != null) {
-                List<CategoryResponse> categories = productResponse.getCategoryIds().stream().map((categoryId) -> categoryMapper.toCategoryResponse(categoryRepository.findById(categoryId).get())).collect(Collectors.toList());
-                productResponse.setCategoryResponse(categories);
-            }
-            if (productResponse.getSupplierId() != null) {
-                productResponse.setSupplierResponse(suppliersMapper.toSupplierResponse(suppliersRepository.findById(productResponse.getSupplierId()).get()));
-            }
-            return productResponse;
-        }).collect(Collectors.toList());
+        List<ProductResponse> productResponses = pageData.getContent().stream().map(this::convertProductResponse).collect(Collectors.toList());
         return PageResponse.<ProductResponse>builder()
                 .pageSize(pageData.getSize())
                 .currentPage(pageData.getNumber() + 1)
