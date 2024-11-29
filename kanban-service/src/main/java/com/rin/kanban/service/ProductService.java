@@ -10,12 +10,14 @@ import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.CategoryMapper;
 import com.rin.kanban.mapper.ProductMapper;
 import com.rin.kanban.mapper.SuppliersMapper;
+import com.rin.kanban.pojo.RatingResult;
 import com.rin.kanban.repository.CategoryRepository;
 import com.rin.kanban.repository.ProductRepository;
 import com.rin.kanban.repository.SubProductRepository;
 import com.rin.kanban.repository.SuppliersRepository;
 import com.rin.kanban.repository.custom.OrderCustomRepository;
 import com.rin.kanban.repository.custom.ProductCustomRepository;
+import com.rin.kanban.repository.custom.RatingCustomRepository;
 import com.rin.kanban.repository.custom.SubProductCustomRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +49,7 @@ public class ProductService {
     SuppliersMapper suppliersMapper;
     SuppliersRepository suppliersRepository;
     OrderCustomRepository orderCustomRepository;
+    RatingCustomRepository ratingCustomRepository;
 
     public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = productMapper.toProduct(productRequest);
@@ -80,6 +83,10 @@ public class ProductService {
             productResponse.setSupplierResponse(suppliersMapper.toSupplierResponse(suppliersRepository.findById(productResponse.getSupplierId()).get()));
         }
         productResponse.setTotalSold(orderCustomRepository.getSoldCountByProductId(product.getId()));
+        RatingResult ratingResult = ratingCustomRepository.getRatingByProductId(product.getId());
+        productResponse.setCountRating(ratingResult.getCountRating());
+        productResponse.setAverageRating(ratingResult.getAverageRating());
+
         return productResponse;
     }
 

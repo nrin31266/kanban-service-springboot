@@ -35,12 +35,13 @@ public class ProductResponse {
     Set<String> categoryIds;
     Instant createdAt;
     Instant updatedAt;
-
+    //
     SupplierResponse supplierResponse;
     List<CategoryResponse> categoryResponse;
     BigDecimal maxPrice;
     BigDecimal minPrice;
     BigDecimal totalSold;
-
-
+    //Rating
+    BigDecimal countRating;
+    float averageRating;
 }
