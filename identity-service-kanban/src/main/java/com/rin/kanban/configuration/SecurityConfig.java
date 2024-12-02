@@ -21,7 +21,7 @@ import java.util.Random;
 public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
         "/auth/login", "/users/create", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh" ,
-            "/auth/outbound/google-login",
+            "/auth/outbound/google-login", "/otp/**", "/auth/check"
     };
     CustomJwtDecoder customJwtDecoder;
     @Bean

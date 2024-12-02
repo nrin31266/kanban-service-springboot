@@ -18,25 +18,19 @@ public class InternalUserProfileController {
     UserProfileService userProfileService;
 
     @PostMapping("/users")
-    ApiResponse<UserProfileResponse> createUserProfile(@RequestBody ProfileCreationRequest request) {
-        return ApiResponse.<UserProfileResponse>builder()
-                .result(userProfileService.createProfile(request))
-                .build();
+    UserProfileResponse createUserProfile(@RequestBody ProfileCreationRequest request) {
+        return userProfileService.createProfile(request);
     }
 
     @GetMapping("/users/my-info")
-    ApiResponse<UserProfileResponse> getMyUserProfile() {
-        return ApiResponse.<UserProfileResponse>builder()
-                .result(userProfileService.getUserProfileById())
-                .build();
+    UserProfileResponse getMyUserProfile() {
+        return userProfileService.getUserProfileById();
     }
 
     @GetMapping("/users/{userId}")
-    ApiResponse<UserProfileResponse> getUserProfile(
+    UserProfileResponse getUserProfile(
             @PathVariable("userId") String userId
     ) {
-        return ApiResponse.<UserProfileResponse>builder()
-                .result(userProfileService.getUserProfileByUserId(userId))
-                .build();
+        return userProfileService.getUserProfileByUserId(userId);
     }
 }

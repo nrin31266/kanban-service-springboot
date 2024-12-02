@@ -2,6 +2,7 @@ package com.rin.kanban.service;
 
 import com.rin.envent.dto.NotificationEvent;
 import com.rin.kanban.constant.OtpType;
+import com.rin.kanban.dto.request.LoginOtpRequest;
 import com.rin.kanban.dto.request.VerifyOtpRequest;
 import com.rin.kanban.dto.response.OtpResponse;
 import com.rin.kanban.dto.response.VerifyOtpResponse;
@@ -12,6 +13,7 @@ import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.OtpMapper;
 import com.rin.kanban.repository.OtpRepository;
 import com.rin.kanban.repository.UserRepository;
+import com.rin.kanban.repository.httpclient.ProfileClient;
 import com.rin.kanban.utils.OtpGenerator;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,7 @@ public class OtpService {
     OtpMapper otpMapper;
     PasswordEncoder passwordEncoder;
     KafkaTemplate<String, Object> kafkaTemplate;
+    ProfileClient profileClient;
 
     public OtpResponse createOtp() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -99,6 +102,34 @@ public class OtpService {
         return new VerifyOtpResponse(verified, message);
     }
 
+    public void login(User user, String otpCode) {
+        Otp otp = otpRepository.findFirstByUser_IdOrderByCreatedAtDesc(user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.OTP_ERROR)); // Lỗi khi không tìm thấy OTP
+
+        log.info(otp.toString());
+
+        if (Instant.now().isAfter(otp.getExpiresAt())) {
+            // OTP đã hết hạn
+            throw new AppException(ErrorCode.OTP_EXPIRED);
+        } else if (otp.isVerified()) {
+            // OTP đã được sử dụng
+            throw new AppException(ErrorCode.OTP_USED);
+        } else {
+            boolean verified = verifyOtpCode(otpCode, otp.getOtp());
+            if (verified) {
+                otp.setVerified(true);
+                otpRepository.save(otp);
+            } else {
+                // OTP không chính xác
+                throw new AppException(ErrorCode.OTP_INCORRECT);
+            }
+        }
+    }
+
+
+
+
+
     public VerifyOtpResponse userVerify(VerifyOtpRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
@@ -140,6 +171,9 @@ public class OtpService {
 
     private NotificationEvent createEmailVerify(User user){
         HashMap<String, Object> params = new HashMap<>();
+
+
+
         params.put("name", user.getId());
         String otpCode = otpGenerator.generateOtpCode();
         createOtp(user.getId(), otpCode);

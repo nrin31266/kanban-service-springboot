@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ import java.util.Map;
 public class EmailController {
     EmailService emailService;
     @PostMapping("/send")
-    public ApiResponse<EmailResponse> sendEmail(@RequestBody SendEmailRequest request) {
+    public ApiResponse<EmailResponse> sendEmail(@RequestBody SendEmailRequest request) throws IOException {
         Map<String, Object> params = new HashMap<>();
         params.put("name", request.getSubject());
         return ApiResponse.<EmailResponse>builder()

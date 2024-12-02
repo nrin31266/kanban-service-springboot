@@ -47,6 +47,7 @@ public class AuthenticationService {
 
     OutboundIdentityClient outboundIdentityClient;
     OutboundUserClient outboundUserClient;
+    OtpService otpService;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -86,6 +87,7 @@ public class AuthenticationService {
         if(user.isEmpty()){
             CreateUserRequest createUserRequest =
                     CreateUserRequest.builder()
+
                             .name(userInfo.getFamilyName() + " " + userInfo.getGivenName())
                             .email(userInfo.getEmail())
                             .password(null)
@@ -101,7 +103,18 @@ public class AuthenticationService {
                 .build();
     }
 
-    public AuthenticationResponse authenticated(LoginRequest loginRequest) {
+    public AuthenticationResponse authenticated(LoginOtpRequest request) {
+        User user = userRepository.findById(request.getUserId()).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        otpService.login(user, request.getOtp());
+
+
+        String token = generateToken(user);
+        return AuthenticationResponse.builder()
+                .token(token)
+                .build();
+    }
+    public String checkAccount(LoginRequest loginRequest) {
         var user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
@@ -109,12 +122,9 @@ public class AuthenticationService {
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new AppException(ErrorCode.INCORRECT_LOGIN_INFORMATION);
         }
-
-        String token = generateToken(user);
-        return AuthenticationResponse.builder()
-                .token(token)
-                .build();
+        return user.getId();
     }
+
 
 
 
@@ -264,4 +274,6 @@ public class AuthenticationService {
         }
         return stringJoiner.toString();
     }
+
+
 }

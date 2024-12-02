@@ -46,7 +46,7 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal min,  // Giá tối thiểu
             @RequestParam(required = false) String supplierIds, // Danh sách nhà cung cấp
             @RequestParam(defaultValue = "1") int page,           // Số trang
-            @RequestParam(defaultValue = "12") int size            // Kích thước trang
+            @RequestParam(defaultValue = "9") int size            // Kích thước trang
     ) {
 
         FilterProductsRequest filterRequest = FilterProductsRequest.builder()

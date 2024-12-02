@@ -2,10 +2,7 @@ package com.rin.kanban.controller;
 
 import com.nimbusds.jose.JOSEException;
 import com.rin.kanban.dto.ApiResponse;
-import com.rin.kanban.dto.request.IntrospectRequest;
-import com.rin.kanban.dto.request.LoginRequest;
-import com.rin.kanban.dto.request.LogoutRequest;
-import com.rin.kanban.dto.request.RefreshRequest;
+import com.rin.kanban.dto.request.*;
 import com.rin.kanban.dto.response.AuthenticationResponse;
 import com.rin.kanban.dto.response.RefreshTokenResponse;
 import com.rin.kanban.dto.response.IntrospectResponse;
@@ -29,9 +26,16 @@ public class AuthenticationController {
     AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    ApiResponse<AuthenticationResponse> login(@RequestBody @Validated LoginRequest request) {
+    ApiResponse<AuthenticationResponse> login(@RequestBody @Validated LoginOtpRequest request) {
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(authenticationService.authenticated(request))
+                .build();
+    }
+    @PostMapping("/check")
+    ApiResponse<String> check(@RequestBody @Validated LoginRequest request) {
+
+        return ApiResponse.<String>builder()
+                .result(authenticationService.checkAccount(request))
                 .build();
     }
     @PostMapping("/refresh")

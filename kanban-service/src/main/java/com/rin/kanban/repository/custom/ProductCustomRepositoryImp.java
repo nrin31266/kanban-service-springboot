@@ -150,7 +150,7 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
                 Aggregation.group("orderProducts.productId") // Nhóm theo productId
                         .sum("orderProducts.count").as("totalSold"), // Tổng số lượng đã bán
                 Aggregation.sort(Sort.Direction.DESC, "totalSold"), // Sắp xếp giảm dần
-                Aggregation.limit(12) // Lấy 12 sản phẩm đầu tiên
+                Aggregation.limit(8) // Lấy 12 sản phẩm đầu tiên
         );
 
 //        AggregationResults<BestSellerResult> results = mongoTemplate.aggregate(aggregation, "orders", BestSellerResult.class);

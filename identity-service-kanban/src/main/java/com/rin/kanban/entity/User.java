@@ -17,21 +17,21 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
-    @Column(unique = true)
-    String email;
-    @Column(name = "email-verified")
-    Boolean emailVerified = false;
-    String password;
-    @CreatedDate
-    Instant createdAt;
-    @LastModifiedDate
-    Instant updatedAt;
-    @ManyToMany
-    Set<Role> roles;
-    @OneToMany(mappedBy = "user")
-    Set<Otp> otp;
-}
+    public class User {
+        @Id
+        @GeneratedValue(strategy = GenerationType.UUID)
+        String id;
+        @Column(unique = true)
+        String email;
+        @Column(name = "email-verified")
+        Boolean emailVerified = false;
+        String password;
+        @CreatedDate
+        Instant createdAt;
+        @LastModifiedDate
+        Instant updatedAt;
+        @ManyToMany
+        Set<Role> roles;
+        @OneToMany(mappedBy = "user")
+        Set<Otp> otp;
+    }

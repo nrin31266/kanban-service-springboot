@@ -15,4 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface ProfileClient {
     @PostMapping(value = "/internal/users", produces = MediaType.APPLICATION_JSON_VALUE)
     UserProfileResponse createUserProfile(@RequestBody ProfileCreationRequest request);
+
+
 }

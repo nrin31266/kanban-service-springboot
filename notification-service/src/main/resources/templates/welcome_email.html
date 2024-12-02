@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to RT</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f8fc;
+            color: #333;
+            padding: 30px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .email-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        .email-header {
+            font-size: 26px;
+            font-weight: bold;
+            color: #4A90E2;
+            margin-bottom: 20px;
+        }
+        .email-body {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #555;
+            margin-bottom: 30px;
+        }
+        .email-body p {
+            margin: 10px 0;
+        }
+        .email-footer {
+            font-size: 14px;
+            color: #888;
+            margin-top: 20px;
+        }
+        .footer-link {
+            color: #4A90E2;
+            text-decoration: none;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #4A90E2;
+            color: white;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        .cta-button:hover {
+            background-color: #357ABD;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        Welcome to RT, {{userName}}!
+    </div>
+    <div class="email-body">
+        <p>Dear {{userName}},</p>
+        <p>Thank you for joining RT. We are thrilled to have you on board!</p>
+        <p>Use the following code to verify your account:</p>
+        <div class="cta-button">
+            {{otpCode}}
+        </div>
+        <p>If you have any questions or need assistance, feel free to <a href="mailto:support@rt.com" class="footer-link">contact our support team</a>.</p>
+        <p>We're here to help you every step of the way!</p>
+    </div>
+    <div class="email-footer">
+        <p>Best regards,</p>
+        <p>The RT Team</p>
+        <p><a href="https://www.rt.com" class="footer-link">Visit our website</a> | <a href="mailto:support@rt.com" class="footer-link">Contact Support</a></p>
+    </div>
+</div>
+</body>
+</html>

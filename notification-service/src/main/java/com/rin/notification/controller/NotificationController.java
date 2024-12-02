@@ -12,6 +12,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -27,15 +29,14 @@ public class NotificationController {
     }
 
     @KafkaListener(topics = "notification-delivery", groupId = "notification-group")
-    public void listenNotificationDelivery(NotificationEvent request) {
-        log.info("Message received: {}", request);
+    public void listenNotificationDelivery(NotificationEvent request) throws IOException {
         emailService.sendWelcomeEmail(request);
     }
 
     @KafkaListener(topics = "notification-otp-email")
     public void listenNotificationVerifyOtpCodeWithEmail(NotificationEvent request) {
-        log.info("Message received: {}", request);
         emailService.sendOtpCode(request);
     }
+
 
 }

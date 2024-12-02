@@ -1,5 +1,6 @@
 package com.rin.kanban.repository;
 
+import com.rin.kanban.constant.OtpType;
 import com.rin.kanban.entity.Otp;
 import org.springframework.data.jpa.repository.JpaRepository;
 

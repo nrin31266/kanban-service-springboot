@@ -41,8 +41,10 @@ public class UserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     RoleRepository roleRepository;
-    OtpService otpService;
+    KafkaTemplate<String, Object> kafkaTemplate;
     ProfileClient profileClient;
+    OtpService otpService;
+    private final OtpGenerator otpGenerator;
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
@@ -74,7 +76,24 @@ public class UserService {
 
         profileClient.createUserProfile(profileCreationRequest);
 
-        otpService.sendEmailVerifyByUser(user);
+        //        Public message to kafka
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("name", request.getName());
+        String otpCode = otpGenerator.generateOtpCode();
+        otpService.createOtp(user.getId(), otpCode);
+        params.put("otpCode", otpCode);
+        NotificationEvent wellComeEmail = NotificationEvent.builder()
+                .channel("EMAIL")
+                .param(params)
+                .recipient(request.getEmail())
+                .subject("Well come to RT")
+                .body("Hello " + request.getName())
+                .build();
+
+
+        kafkaTemplate.send("notification-delivery", wellComeEmail);
+
+
         return userMapper.toUserResponse(user);
     }
 
