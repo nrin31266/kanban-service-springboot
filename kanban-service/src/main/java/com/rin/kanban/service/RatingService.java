@@ -115,7 +115,7 @@ public class RatingService {
 
         List<RatingResponse> ratingResponses = pageData.getContent().stream().map((rating)->{
             RatingResponse ratingResponse = ratingMapper.toRatingResponse(rating);
-            UserProfileResponse userProfileResponse = profileClient.getProfile(rating.getUserId()).getResult();
+            UserProfileResponse userProfileResponse = profileClient.getProfile(rating.getUserId());
             if(userProfileResponse != null) {
                 ratingResponse.setAvatar(userProfileResponse.getAvatar() != null ? userProfileResponse.getAvatar() : null);
                 ratingResponse.setName(userProfileResponse.getName());

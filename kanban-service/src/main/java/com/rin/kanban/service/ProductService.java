@@ -12,6 +12,7 @@ import com.rin.kanban.exception.ErrorCode;
 import com.rin.kanban.mapper.CategoryMapper;
 import com.rin.kanban.mapper.ProductMapper;
 import com.rin.kanban.mapper.SuppliersMapper;
+import com.rin.kanban.pojo.ProductResult;
 import com.rin.kanban.pojo.RatingResult;
 import com.rin.kanban.repository.CategoryRepository;
 import com.rin.kanban.repository.ProductRepository;
@@ -212,7 +213,9 @@ public class ProductService {
         return new ArrayList<>();
     }
 
-
+    public ProductResult test(String productId){
+        return productCustomRepository.getProductById(productId);
+    }
 
 
 }

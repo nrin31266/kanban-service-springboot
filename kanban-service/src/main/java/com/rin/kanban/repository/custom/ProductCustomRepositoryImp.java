@@ -4,6 +4,7 @@ import com.rin.kanban.dto.request.FilterProductsRequest;
 import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
 import com.rin.kanban.entity.Product;
 import com.rin.kanban.pojo.BestSellerResult;
+import com.rin.kanban.pojo.ProductResult;
 import com.rin.kanban.pojo.RatingResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -161,6 +162,30 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
                 .map(doc -> doc.getString("_id")) // Lấy _id (productId)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public ProductResult getProductById(String productId) {
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(Criteria.where("_id").is(productId)),
+                Aggregation.lookup("sub-products", "_id", "productId", "subProducts"),
+                Aggregation.lookup("suppliers", "_id", "supplierId", "supplier"),
+                Aggregation.lookup("category", "_id", "categoryIds", "categories")
+        );
+
+        AggregationResults<ProductResult> results = mongoTemplate.aggregate(aggregation, "products", ProductResult.class);
+
+        // In kết quả để kiểm tra
+        List<ProductResult> mappedResults = results.getMappedResults();
+        if (mappedResults.isEmpty()) {
+            System.out.println("No products found for ID: " + productId);
+            return null;
+        } else {
+            System.out.println("Product found: " + mappedResults.get(0));
+            return mappedResults.get(0);
+        }
+    }
+
+
 
 //
 }

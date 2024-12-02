@@ -7,6 +7,7 @@ import com.rin.kanban.dto.request.ProductRequest;
 import com.rin.kanban.dto.request.ProductsFilterValuesRequest;
 import com.rin.kanban.dto.request.SoftDeleteRequest;
 import com.rin.kanban.dto.response.ProductResponse;
+import com.rin.kanban.pojo.ProductResult;
 import com.rin.kanban.service.ProductService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -132,6 +133,13 @@ public class ProductController {
     public ApiResponse<List<ProductResponse>> getRelatedProducts(@PathVariable("productId") String productId) {
         return ApiResponse.<List<ProductResponse>>builder()
                 .result(productService.getRelatedProducts(productId))
+                .build();
+    }
+
+    @GetMapping("/test/{productId}")
+    public ApiResponse<ProductResult> test(@PathVariable("productId") String productId) {
+        return ApiResponse.<ProductResult>builder()
+                .result(productService.test(productId))
                 .build();
     }
 }

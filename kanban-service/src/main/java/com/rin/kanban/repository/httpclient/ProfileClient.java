@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface ProfileClient {
 
     @GetMapping("internal/users/{userId}")
-    ApiResponse<UserProfileResponse> getProfile(
+    UserProfileResponse getProfile(
             @PathVariable("userId") String userId
     );
 }
