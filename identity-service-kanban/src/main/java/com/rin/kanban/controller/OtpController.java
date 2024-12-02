@@ -40,9 +40,9 @@ public class OtpController {
                 .build();
     }
 
-    @PostMapping("/send-email-verify")
-    ApiResponse reSendEmailVerify() {
-        otpService.sendEmailVerify();
+    @PostMapping("/send-email-verify/{userId}")
+    ApiResponse reSendEmailVerify(@PathVariable("userId") String userId) {
+        otpService.sendEmailVerify(userId);
         return ApiResponse.builder()
                 .message("ok")
                 .build();

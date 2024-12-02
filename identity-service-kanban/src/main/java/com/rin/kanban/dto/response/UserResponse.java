@@ -17,4 +17,5 @@ public class UserResponse {
     String createdAt;
     String updatedAt;
     Set<RoleResponse> roles;
+    String type;
 }

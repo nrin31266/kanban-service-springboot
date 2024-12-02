@@ -5,6 +5,7 @@ import com.rin.kanban.constant.OtpType;
 import com.rin.kanban.dto.request.LoginOtpRequest;
 import com.rin.kanban.dto.request.VerifyOtpRequest;
 import com.rin.kanban.dto.response.OtpResponse;
+import com.rin.kanban.dto.response.UserProfileResponse;
 import com.rin.kanban.dto.response.VerifyOtpResponse;
 import com.rin.kanban.entity.Otp;
 import com.rin.kanban.entity.User;
@@ -149,9 +150,7 @@ public class OtpService {
         return passwordEncoder.matches(otpCodeRequest, otpCode);
     }
 
-    public void sendEmailVerify() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userId = authentication.getName();
+    public void sendEmailVerify(String userId) {
         User user = userRepository.findById(userId).orElseThrow(()->new AppException(ErrorCode.USER_NOT_FOUND));
         NotificationEvent sendEmail = createEmailVerify(user);
         kafkaTemplate.send("notification-otp-email", sendEmail);
@@ -170,16 +169,14 @@ public class OtpService {
     }
 
     private NotificationEvent createEmailVerify(User user){
+        UserProfileResponse userProfile = profileClient.getUserProfile(user.getId());
         HashMap<String, Object> params = new HashMap<>();
 
-
-
-        params.put("name", user.getId());
+        params.put("name", userProfile.getName());
         String otpCode = otpGenerator.generateOtpCode();
         createOtp(user.getId(), otpCode);
-        params.put("OTPCode", otpCode);
+        params.put("otpCode", otpCode);
         return NotificationEvent.builder()
-                .body("Hello " + user.getId() + ", this is OTP code of you: ")
                 .recipient(user.getEmail())
                 .param(params)
                 .subject("Verify email")

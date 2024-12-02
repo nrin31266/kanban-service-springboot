@@ -63,34 +63,13 @@ public class EmailService {
         }
     }
 
-    public EmailResponse sendOtpCode(NotificationEvent request) {
-        String recipientName = (String) request.getParam().getOrDefault("name", "N/A");
-        String OTPCode = (String) request.getParam().getOrDefault("OTPCode", null);
-        if (OTPCode == null) {
-            log.info("OTP code is null");
-            throw new AppException(ErrorCode.CANNOT_SEND_EMAIL);
-        }
-        EmailRequest emailRequest = EmailRequest.builder()
-                .sender(emailSender)
-                .to(List.of(EmailRecipient.builder()
-                        .name(recipientName)
-                        .email(request.getRecipient())
-                        .build()))
-                .htmlContent(request.getBody() + ": " + OTPCode)
-                .subject(request.getSubject())
-                .build();
-        return sendEmail(emailRequest);
-    }
-
-    public EmailResponse sendWelcomeEmail(NotificationEvent request) throws IOException {
+    public EmailResponse sendOtpCode(NotificationEvent request) throws IOException {
         String recipientName = (String) request.getParam().getOrDefault("name", null);
         String otpCode = (String) request.getParam().getOrDefault("otpCode", null);
-
-        if (recipientName == null || otpCode == null) {
-            log.info("Recipient name or OTP code is null");
+        if (otpCode == null || recipientName == null) {
             throw new AppException(ErrorCode.CANNOT_SEND_EMAIL);
         }
-        String emailTemplate = readTemplateFromResources("templates/welcome_email.html");
+        String emailTemplate = readTemplateFromResources("templates/verification.html");
         String emailBody = emailTemplate
                 .replace("{{userName}}", recipientName)
                 .replace("{{otpCode}}", otpCode);
@@ -105,6 +84,50 @@ public class EmailService {
                 .build();
         return sendEmail(emailRequest);
     }
+
+    public EmailResponse sendWelcomeEmail(NotificationEvent request) throws IOException {
+        String recipientName = (String) request.getParam().getOrDefault("name", null);
+        String otpCode = (String) request.getParam().getOrDefault("otpCode", null);
+        String type = (String) request.getParam().getOrDefault("type", "default");
+
+        if (recipientName == null || (otpCode == null && !"Google".equals(type))) {
+            log.info("Recipient name is null or OTP code is required but missing");
+            throw new AppException(ErrorCode.CANNOT_SEND_EMAIL);
+        }
+
+        String emailTemplate = readTemplateFromResources("templates/welcome_email.html");
+        String emailBody;
+
+        if ("Google".equals(type)) {
+            emailBody = emailTemplate
+                    .replace("{{userName}}", recipientName)
+                    .replace("{{otpSection}}",
+                            "<a href=\"http://localhost:3004\" class=\"cta-button\">Get Started</a>"
+                    );
+        } else {
+            emailBody = emailTemplate
+                    .replace("{{userName}}", recipientName)
+                    .replace("{{otpSection}}",
+                            "<p>Use the following code to verify your account:</p>" +
+                                    "<div class=\"cta-button\">{{otpCode}}</div>"
+                    )
+                    .replace("{{otpCode}}", otpCode);
+        }
+
+        EmailRequest emailRequest = EmailRequest.builder()
+                .sender(emailSender)
+                .to(List.of(EmailRecipient.builder()
+                        .name(recipientName)
+                        .email(request.getRecipient())
+                        .build()))
+                .htmlContent(emailBody)
+                .subject(request.getSubject())
+                .build();
+
+        return sendEmail(emailRequest);
+    }
+
+
 
     private String readTemplateFromResources(String resourcePath) throws IOException {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(resourcePath);

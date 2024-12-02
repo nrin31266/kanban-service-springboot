@@ -63,6 +63,10 @@ public class UserService {
         if ((request.getPassword() != null)) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
+
+        if(user.getType()==null|| user.getType().isEmpty()){
+            user.setType("System");
+        }
         try {
             user = userRepository.save(user);
         }catch (DataIntegrityViolationException e){
@@ -82,6 +86,7 @@ public class UserService {
         String otpCode = otpGenerator.generateOtpCode();
         otpService.createOtp(user.getId(), otpCode);
         params.put("otpCode", otpCode);
+        params.put("type", user.getType());
         NotificationEvent wellComeEmail = NotificationEvent.builder()
                 .channel("EMAIL")
                 .param(params)

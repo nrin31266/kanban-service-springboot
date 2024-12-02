@@ -34,7 +34,7 @@ public class NotificationController {
     }
 
     @KafkaListener(topics = "notification-otp-email")
-    public void listenNotificationVerifyOtpCodeWithEmail(NotificationEvent request) {
+    public void listenNotificationVerifyOtpCodeWithEmail(NotificationEvent request) throws IOException {
         emailService.sendOtpCode(request);
     }
 

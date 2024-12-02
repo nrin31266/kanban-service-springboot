@@ -34,4 +34,5 @@ import java.util.Set;
         Set<Role> roles;
         @OneToMany(mappedBy = "user")
         Set<Otp> otp;
+        String type;
     }

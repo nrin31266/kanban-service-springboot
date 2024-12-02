@@ -87,7 +87,7 @@ public class AuthenticationService {
         if(user.isEmpty()){
             CreateUserRequest createUserRequest =
                     CreateUserRequest.builder()
-
+                            .type("Google")
                             .name(userInfo.getFamilyName() + " " + userInfo.getGivenName())
                             .email(userInfo.getEmail())
                             .password(null)
@@ -108,6 +108,10 @@ public class AuthenticationService {
 
         otpService.login(user, request.getOtp());
 
+        if(user.getEmailVerified()== null || !user.getEmailVerified()){
+            user.setEmailVerified(true);
+            userRepository.save(user);
+        }
 
         String token = generateToken(user);
         return AuthenticationResponse.builder()

@@ -25,4 +25,6 @@ public class CreateUserRequest {
     @NotBlank(message = "INVALID_FIELD")
     @Size(min = 8, message = "PASSWORD_INVALID")
     String password;
+
+    String type;
 }
