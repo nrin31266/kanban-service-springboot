@@ -104,7 +104,7 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticated(LoginOtpRequest request) {
-        User user = userRepository.findById(request.getUserId()).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findByEmail(request.getUserId()).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND));
 
         otpService.login(user, request.getOtp());
 
@@ -127,6 +127,19 @@ public class AuthenticationService {
             throw new AppException(ErrorCode.INCORRECT_LOGIN_INFORMATION);
         }
         return user.getId();
+    }
+
+    public AuthenticationResponse authenticatedAdmin(LoginRequest loginRequest) {
+        User user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            throw new AppException(ErrorCode.INCORRECT_LOGIN_INFORMATION);
+        }
+        String token = generateToken(user);
+        return AuthenticationResponse.builder()
+                .token(token)
+                .build();
     }
 
 

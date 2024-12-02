@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5; /* Màu nền xám nhạt */
+            color: #333; /* Văn bản màu xám đậm */
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        h2 {
+            background: #6f79a8; /* Tông xanh tím sang trọng */
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 26px;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+            margin: 20px 0;
+        }
+        p {
+            color: #555; /* Màu xám trung tính */
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15); /* Đổ bóng nhẹ */
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th {
+            background: #485563; /* Tông xám xanh đậm */
+            color: #fff; /* Màu chữ trắng */
+            font-size: 16px;
+            padding: 12px;
+            text-transform: uppercase;
+        }
+        td {
+            background: #ffffff; /* Nền trắng */
+            color: #333; /* Văn bản màu xám đậm */
+            padding: 12px;
+            font-size: 14px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0; /* Viền mỏng */
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9; /* Màu nền xám nhạt xen kẽ */
+        }
+        img {
+            max-width: 100px;
+            height: auto;
+            border-radius: 5px;
+        }
+        .highlight {
+            color: #2d6a4f; /* Màu xanh lá nhẹ nhàng */
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .total {
+            background: #673ab7; /* Màu tím đậm */
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+<h2>🚀 Your Order Is Here! 🛒</h2>
+<p class="highlight">Customer: <span th:text="${order.customerName}"></span></p>
+<p>Phone: <span th:text="${order.customerPhone}"></span></p>
+<p>Email: <span th:text="${order.customerEmail}"></span></p>
+<p>Address: <span th:text="${order.customerAddress}"></span></p>
+
+<table>
+    <thead>
+    <tr>
+        <th>Product Image</th>
+        <th>Product Name</th>
+        <th>Quantity</th>
+        <th>Price</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Lặp qua danh sách sản phẩm -->
+    <tr th:each="product : ${order.orderProductResponses}">
+        <td>
+            <img th:src="${product.imageUrl}" alt="Product Image">
+        </td>
+        <td th:text="${product.name}"></td>
+        <td th:text="${product.count}"></td>
+        <td th:text="${product.price}"></td>
+    </tr>
+    </tbody>
+    <tfoot>
+    <tr>
+        <td colspan="3" class="total">Total Amount</td>
+        <td class="total" th:text="${order.amount}"></td>
+    </tr>
+    </tfoot>
+</table>
+
+<p style="margin-top: 20px;">Thank you for shopping with us! 🛍️</p>
+</body>
+</html>

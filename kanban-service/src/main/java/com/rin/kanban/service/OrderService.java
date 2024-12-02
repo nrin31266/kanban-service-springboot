@@ -1,6 +1,7 @@
 package com.rin.kanban.service;
 
 
+import com.rin.envent.dto.NotificationEvent;
 import com.rin.kanban.constant.DiscountType;
 import com.rin.kanban.constant.Status;
 import com.rin.kanban.dto.PageResponse;
@@ -32,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,6 +59,8 @@ public class OrderService {
     SubProductRepository subProductRepository;
     CartService cartService;
     DateTimeFormatter dateTimeFormatter;
+    KafkaTemplate<String, Object> kafkaTemplate;
+
 
 
     @Transactional(rollbackFor = AppException.class) // Đảm bảo rollback khi có lỗi
@@ -93,6 +98,18 @@ public class OrderService {
         order= orderRepository.save(order);
         OrderResponse orderResponse = orderMapper.toOrderResponse(order);
         orderResponse.setOrderProductResponses(orderProductResponses);
+
+
+        //Send email
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("order", orderResponse);
+        NotificationEvent orderEmail = NotificationEvent.builder()
+                .channel("ORDER")
+                .param(params)
+                .recipient(orderResponse.getCustomerEmail())
+                .subject("Order")
+                .build();
+        kafkaTemplate.send("notification-order", orderEmail);
 
         return orderResponse;
     }

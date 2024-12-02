@@ -38,5 +38,10 @@ public class NotificationController {
         emailService.sendOtpCode(request);
     }
 
+    @KafkaListener(topics = "notification-order")
+    public void listenNotificationOrder(NotificationEvent request) {
+        emailService.sendOrderEmail(request);
+    }
+
 
 }

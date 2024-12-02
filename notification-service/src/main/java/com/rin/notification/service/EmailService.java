@@ -1,6 +1,8 @@
 package com.rin.notification.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rin.envent.dto.NotificationEvent;
+import com.rin.notification.dto.noname.Order;
 import com.rin.notification.dto.request.EmailRecipient;
 import com.rin.notification.dto.request.EmailRequest;
 import com.rin.notification.dto.request.EmailSender;
@@ -16,6 +18,8 @@ import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +35,8 @@ import java.util.List;
 @Slf4j
 public class EmailService {
     EmailClient emailClient;
+    private final SpringTemplateEngine templateEngine;
+    private final ObjectMapper jacksonObjectMapper;
 
     @NonFinal
     @Value("${app.api-key}")
@@ -135,5 +142,39 @@ public class EmailService {
             throw new IOException("Template not found: " + resourcePath);
         }
         return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+    }
+
+    public EmailResponse sendOrderEmail(NotificationEvent request) {
+        try {
+            // Lấy dữ liệu từ param và chuyển đổi sang đối tượng Order
+            Map<String, Object> param = request.getParam();
+            Map<String, Object> orderMap = (Map<String, Object>) param.get("order");
+            Order order = jacksonObjectMapper.convertValue(orderMap, Order.class);
+
+            // Thiết lập context cho template
+            Context context = new Context();
+            context.setVariable("order", order);
+
+            // Render HTML template thành chuỗi
+            String htmlContent = templateEngine.process("order-email-template", context);
+
+            // Tạo EmailRequest để gửi email
+            EmailRequest emailRequest = EmailRequest.builder()
+                    .sender(emailSender)
+                    .to(List.of(EmailRecipient.builder()
+                            .name(order.getCustomerName())
+                            .email(request.getRecipient())
+                            .build()))
+                    .htmlContent(htmlContent)
+                    .subject(request.getSubject())
+                    .build();
+
+            // Gửi email
+            return sendEmail(emailRequest);
+
+        } catch (Exception e) {
+            log.error("Failed to send order email", e);
+            throw new AppException(ErrorCode.CANNOT_SEND_EMAIL);
+        }
     }
 }

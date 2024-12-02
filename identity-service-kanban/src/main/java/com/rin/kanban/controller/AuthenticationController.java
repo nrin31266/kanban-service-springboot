@@ -31,6 +31,12 @@ public class AuthenticationController {
                 .result(authenticationService.authenticated(request))
                 .build();
     }
+    @PostMapping("/admin")
+    ApiResponse<AuthenticationResponse> loginAdmin(@RequestBody @Validated LoginRequest request) {
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(authenticationService.authenticatedAdmin(request))
+                .build();
+    }
     @PostMapping("/check")
     ApiResponse<String> check(@RequestBody @Validated LoginRequest request) {
 
