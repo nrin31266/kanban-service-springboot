@@ -104,7 +104,7 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticated(LoginOtpRequest request) {
-        User user = userRepository.findByEmail(request.getUserId()).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(request.getUserId()).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND));
 
         otpService.login(user, request.getOtp());
 
