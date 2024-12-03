@@ -1,6 +1,7 @@
 package com.rin.kanban.repository.custom;
 
 import com.rin.kanban.dto.request.FilterProductsRequest;
+import com.rin.kanban.dto.response.ProductResponse;
 import com.rin.kanban.entity.Product;
 import com.rin.kanban.pojo.BestSellerResult;
 import com.rin.kanban.pojo.ProductResult;
@@ -12,4 +13,6 @@ public interface ProductCustomRepository {
     Page<Product> searchProducts(FilterProductsRequest filterRequest, int page, int size);
     List<String> getTopSoldProducts();
     ProductResult getProductById(String productId);
+
+    Page<ProductResponse> searchProductsV2(FilterProductsRequest filterRequest, int page, int size);
 }

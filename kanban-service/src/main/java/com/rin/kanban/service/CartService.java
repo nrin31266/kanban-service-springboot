@@ -44,13 +44,14 @@ public class CartService {
     ProductMapper productMapper;
 
     public CartResponse addCart(CartRequest request) {
-        if (cartRepository.findCart(request.getSubProductId(), request.getCreatedBy()).isPresent()) {
-            return updateCartCount(request);
+        Optional<Cart> cart = cartRepository.findCart(request.getSubProductId(), request.getCreatedBy());
+        if (cart.isPresent()) {
+            return updateCartCount(request, cart.get());
         }
-        Cart cart = cartMapper.toCart(request);
-        CartResponse cartResponse = cartMapper.toCartResponse(cartRepository.save(cart));
-        cartResponse.setProductResponse(getProductById(cart.getProductId()));
-        cartResponse.setSubProductResponse(getSubProduct(cart.getSubProductId()));
+        Cart newCart = cartMapper.toCart(request);
+        CartResponse cartResponse = cartMapper.toCartResponse(cartRepository.save(newCart));
+        cartResponse.setProductResponse(getProductById(newCart.getProductId()));
+        cartResponse.setSubProductResponse(getSubProduct(newCart.getSubProductId()));
         cartResponse.setIsCreated(true);
         return cartResponse;
     }
@@ -80,8 +81,7 @@ public class CartService {
         return cartResponse;
     }
 
-    private CartResponse updateCartCount(CartRequest request) {
-        Cart cart = cartRepository.findCart(request.getSubProductId(), request.getCreatedBy()).orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
+    private CartResponse updateCartCount(CartRequest request, Cart cart) {
         SubProduct subProduct = subProductRepository.findById(request.getSubProductId()).orElseThrow(() -> new AppException(ErrorCode.SUB_PRODUCT_NOT_FOUND));
         cartMapper.updateCart(cart, request);
         int newCount = cart.getCount() + request.getCount();
@@ -95,7 +95,6 @@ public class CartService {
         CartResponse cartResponse = cartMapper.toCartResponse(cartRepository.save(cart));
         cartResponse.setProductResponse(getProductById(cart.getProductId()));
         cartResponse.setSubProductResponse(getSubProduct(cart.getSubProductId()));
-
         return cartResponse;
     }
 

@@ -77,16 +77,17 @@ public class ProductService {
     }
 
     public PageResponse<ProductResponse> getProductsByFilterValues(FilterProductsRequest filterProductsRequest, int page, int size) {
-        Page<Product> pageData = productCustomRepository.searchProducts(filterProductsRequest, page, size);
+//        Page<Product> pageData = productCustomRepository.searchProducts(filterProductsRequest, page, size);
+//        List<ProductResponse> productResponses = pageData.getContent().stream().map(this::convertProductResponse).collect(Collectors.toList());
 
-        List<ProductResponse> productResponses = pageData.getContent().stream().map(this::convertProductResponse).collect(Collectors.toList());
+        Page<ProductResponse> pageData = productCustomRepository.searchProductsV2(filterProductsRequest, page, size);
 
         return PageResponse.<ProductResponse>builder()
                 .pageSize(pageData.getNumberOfElements())
                 .currentPage(pageData.getNumber() + 1)
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .data(productResponses)
+                .data(pageData.getContent().stream().map(this::convertProductResponseV2).collect(Collectors.toList()))
                 .build();
     }
 
@@ -117,6 +118,16 @@ public class ProductService {
         productResponse.setMaxPrice(getMaxPrice(product.getId()));
         return productResponse;
     }
+    private ProductResponse convertProductResponseV2(ProductResponse productResponse) {
+
+        productResponse.setTotalSold(orderCustomRepository.getSoldCountByProductId(productResponse.getId()));
+        RatingResult ratingResult = ratingCustomRepository.getRatingByProductId(productResponse.getId());
+        productResponse.setCountRating(ratingResult.getCountRating());
+        productResponse.setAverageRating(ratingResult.getAverageRating());
+//        productResponse.setMinPrice(getMinPrice(productResponse.getId()));
+//        productResponse.setMaxPrice(getMaxPrice(productResponse.getId()));
+        return productResponse;
+    }
 
 //    public List<ProductResponse> getProducts(int page, int size) {
 //        Sort sort = Sort.by(Sort.Direction.DESC, "updatedAt");
@@ -145,7 +156,7 @@ public class ProductService {
 
     private PageResponse<ProductResponse> getSubProductsByPage(Page<Product> pageData) {
 
-        List<ProductResponse> productResponses = pageData.getContent().stream().map(this::convertProductResponse).collect(Collectors.toList());
+        List<ProductResponse> productResponses = pageData.getContent().stream().map(productMapper::toProductResponse).collect(Collectors.toList());
         return PageResponse.<ProductResponse>builder()
                 .pageSize(pageData.getSize())
                 .currentPage(pageData.getNumber() + 1)

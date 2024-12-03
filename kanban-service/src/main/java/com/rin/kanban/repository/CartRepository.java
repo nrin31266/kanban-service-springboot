@@ -12,10 +12,6 @@ public interface CartRepository extends MongoRepository<Cart, String> {
     @Query("{ 'subProductId' : ?0, 'createdBy' : ?1 }")
     Optional<Cart> findCart(String subProductId, String createdBy);
 
-    Optional<Cart> findCartBySubProductId(String subProductId);
-
-    Optional<Cart> findFirstByCreatedBy(String createdBy);
-
     Page<Cart> findAllByCreatedByOrderByUpdatedAtDesc(String createdBy, Pageable pageable);
 
 }

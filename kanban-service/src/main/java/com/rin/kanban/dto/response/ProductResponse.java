@@ -2,6 +2,8 @@ package com.rin.kanban.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.rin.kanban.entity.Category;
+import com.rin.kanban.entity.SubProduct;
+import com.rin.kanban.entity.Supplier;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
@@ -21,7 +23,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductResponse {
     String id;
     String title;
@@ -44,4 +46,8 @@ public class ProductResponse {
     //Rating
     BigDecimal countRating;
     float averageRating;
+    //
+    List<Supplier> suppliers;
+    List<Category> categories;
+    List<SubProduct> subProducts;
 }

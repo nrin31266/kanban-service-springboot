@@ -31,13 +31,17 @@ public class ProductResult {
     Instant createdAt;
     Instant updatedAt;
     //
-    Supplier supplier;
-    List<Category> categories;
-    List<SubProduct> subProducts;
+    SupplierResponse supplierResponse;
+    List<CategoryResponse> categoryResponse;
     BigDecimal maxPrice;
     BigDecimal minPrice;
     BigDecimal totalSold;
     //Rating
     BigDecimal countRating;
     float averageRating;
+    //
+    Supplier supplier;
+    List<Category> categories;
+    List<SubProduct> subProducts;
+
 }

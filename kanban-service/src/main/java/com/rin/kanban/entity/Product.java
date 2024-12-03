@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
@@ -38,6 +39,8 @@ public class Product {
     @LastModifiedDate
     Instant updatedAt;
 
-//    // This field will contain result from lookup
+    // This field will contain result from lookup
+
     List<SubProduct> subProducts;
+
 }
