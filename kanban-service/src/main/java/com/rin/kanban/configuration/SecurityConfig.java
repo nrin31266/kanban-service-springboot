@@ -19,8 +19,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
             "/products",
-            "/categories",
-            "/sub-products",
+            "/categories/*",
+            "/sub-products/*",
             "/promotions",
             "/categories/root",
             "/products/bestseller",

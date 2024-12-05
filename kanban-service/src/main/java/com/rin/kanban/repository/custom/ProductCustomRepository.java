@@ -8,11 +8,12 @@ import com.rin.kanban.pojo.ProductResult;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductCustomRepository {
     Page<Product> searchProducts(FilterProductsRequest filterRequest, int page, int size);
     List<String> getTopSoldProducts();
-    ProductResult getProductById(String productId);
+    Optional<ProductResponse> getProductById(String productId);
 
     Page<ProductResponse> searchProductsV2(FilterProductsRequest filterRequest, int page, int size);
 }

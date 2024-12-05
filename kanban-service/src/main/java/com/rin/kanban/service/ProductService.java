@@ -225,7 +225,7 @@ public class ProductService {
     }
 
     public ProductResult test(String productId){
-        return productCustomRepository.getProductById(productId);
+        return null;
     }
 
 

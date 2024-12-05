@@ -174,26 +174,42 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
     }
 
     @Override
-    public ProductResult getProductById(String productId) {
-        Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("_id").is(productId)),
-                Aggregation.lookup("sub-products", "_id", "productId", "subProducts"),
-                Aggregation.lookup("suppliers", "_id", "supplierId", "supplier"),
-                Aggregation.lookup("category", "_id", "categoryIds", "categories")
-        );
+    public Optional<ProductResponse> getProductById(String productId) {
+        List<AggregationOperation> operations = new ArrayList<>();
 
-        AggregationResults<ProductResult> results = mongoTemplate.aggregate(aggregation, "products", ProductResult.class);
+        // Lookup: Thực hiện join với collection sub-products
+        LookupOperation lookupOperation = Aggregation.lookup("sub-products", "_id", "productId", "subProducts");
+        operations.add(lookupOperation);
 
-        // In kết quả để kiểm tra
-        List<ProductResult> mappedResults = results.getMappedResults();
-        if (mappedResults.isEmpty()) {
-            System.out.println("No products found for ID: " + productId);
-            return null;
-        } else {
-            System.out.println("Product found: " + mappedResults.get(0));
-            return mappedResults.get(0);
+        MatchOperation matchProductIsDeleted = Aggregation.match(Criteria.where("isDeleted").ne(true));
+        operations.add(matchProductIsDeleted);
+
+        // Match theo productId
+        MatchOperation matchProductId = Aggregation.match(Criteria.where("_id").is(productId));
+        operations.add(matchProductId);
+
+        // Thực hiện lookup các thông tin liên quan đến category và supplier
+        operations.add(createCategoriesLookup());
+        operations.add(createSupplierLookup());
+
+        // Chỉ lấy 1 sản phẩm, sử dụng limit(1)
+        operations.add(Aggregation.limit(1));
+
+        // Tiến hành truy vấn
+        Aggregation aggregation = Aggregation.newAggregation(operations);
+        List<ProductResponse> products = mongoTemplate.aggregate(aggregation, "products", ProductResponse.class).getMappedResults();
+
+        // Kiểm tra lại kết quả trả về, log sản phẩm để kiểm tra
+        if (products.isEmpty()) {
+            log.warn("No product found with id: " + productId);
+            return Optional.empty();
         }
+
+        log.info("Product found: " + products.get(0));  // Log sản phẩm đầu tiên
+        return Optional.of(products.get(0));  // Chỉ trả về sản phẩm đầu tiên
     }
+
+
 
     @Override
     public Page<ProductResponse> searchProductsV2(FilterProductsRequest request, int page, int size) {
