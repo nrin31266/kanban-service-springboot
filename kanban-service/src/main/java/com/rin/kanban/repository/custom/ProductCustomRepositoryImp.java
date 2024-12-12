@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.Decimal128;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
@@ -36,109 +37,108 @@ import java.util.stream.Collectors;
 public class ProductCustomRepositoryImp implements ProductCustomRepository {
 
     private final MongoTemplate mongoTemplate;
-    private final SubProductRepository subProductRepository;
-    private final SubProductRepositoryImp subProductRepositoryImp;
-
-    @Override
-    public Page<Product> searchProducts(FilterProductsRequest request, int page, int size) {
-        List<AggregationOperation> operations = new ArrayList<>();
-//        operations.add(createCategoriesLookup());
-//        operations.add(createSupplierLookup());
-
-        // Lookup: Thực hiện join với collection sub-products
-        LookupOperation lookupOperation = Aggregation.lookup("sub-products", "_id", "productId", "subProducts");
-        operations.add(lookupOperation);
-        // Chỉ lấy sản phẩm có isDeleted là false hoặc null
-        MatchOperation matchProductIsDeleted = Aggregation.match(Criteria.where("isDeleted").ne(true));
-        operations.add(matchProductIsDeleted);
-        if (request.getCategoryIds() != null) {
-            List<String> categoryIds = Arrays.asList(request.getCategoryIds().split(","));
-            MatchOperation matchCategoryIds = Aggregation.match(Criteria.where("categoryIds").all(categoryIds));
-            operations.add(matchCategoryIds);
-        }
-        if(request.getSearch() != null) {
-            MatchOperation matchSearch = Aggregation.match(Criteria.where("slug").regex(".*" + request.getSearch() + ".*", "i"));
-            operations.add(matchSearch);
-        }
-        AggregationOperation addFinalPriceField = Aggregation.addFields()
-                .addField("subProducts")
-                .withValue(
-                        new AggregationExpression() {
-                            @Override
-                            public Document toDocument(AggregationOperationContext context) {
-                                return new Document("$map", new Document()
-                                        .append("input", "$subProducts")  // Lấy danh sách subProducts
-                                        .append("as", "subProduct")  // Đặt alias cho từng phần tử
-                                        .append("in", new Document("$mergeObjects", Arrays.asList(
-                                                "$$subProduct",  // Giữ lại tất cả các trường hiện tại của subProduct
-                                                new Document("finalPrice", new Document("$ifNull", Arrays.asList(
-                                                        "$$subProduct.discount",  // Kiểm tra nếu discount là null
-                                                        "$$subProduct.price"  // Dùng price nếu discount là null
-                                                )))
-                                        ))));
-                            }
-                        }
-                )
-                .build();
-
-        operations.add(addFinalPriceField);
-        // Kiểm tra ba trường hợp minPrice, maxPrice, và minPrice với maxPrice:
-        if (request.getMinPrice() != null && request.getMaxPrice() != null) {
-            // Truy vấn với minPrice và maxPrice, và sử dụng `finalPrice` cho subProducts
-            MatchOperation matchByPriceRange = Aggregation.match(
-                    Criteria.where("subProducts.finalPrice")
-                            .gte(new Decimal128(request.getMinPrice()))
-                            .lte(new Decimal128(request.getMaxPrice()))
-            );
-            operations.add(matchByPriceRange);
-        } else if (request.getMinPrice() != null) {
-            // Truy vấn chỉ với minPrice, và sử dụng `finalPrice`
-            MatchOperation matchByMinPrice = Aggregation.match(
-                    Criteria.where("subProducts.finalPrice")
-                            .gte(new Decimal128(request.getMinPrice()))
-            );
-            operations.add(matchByMinPrice);
-        } else if (request.getMaxPrice() != null) {
-            // Truy vấn chỉ với maxPrice, và sử dụng `finalPrice`
-            MatchOperation matchByMaxPrice = Aggregation.match(
-                    Criteria.where("subProducts.finalPrice")
-                            .lte(new Decimal128(request.getMaxPrice()))
-            );
-            operations.add(matchByMaxPrice);
-        }
-
-        operations.add(Aggregation.sort(Sort.by(Sort.Direction.DESC, "updatedAt")));
-        List<AggregationOperation> countOperations = new ArrayList<>(operations);
-        countOperations.add(Aggregation.count().as("totalCount"));
-        Aggregation countAggregation = Aggregation.newAggregation(countOperations);
-        AggregationResults<Document> countResults = mongoTemplate.aggregate(countAggregation, "products", Document.class);
-        long totalElements;
-        if (!countResults.getMappedResults().isEmpty()) {
-            Object totalCountObj = countResults.getMappedResults().getFirst().get("totalCount");
-            if (totalCountObj instanceof Integer) {
-                totalElements = ((Integer) totalCountObj).longValue();  // Convert Integer to Long
-            } else if (totalCountObj instanceof Long) {
-                totalElements = (Long) totalCountObj;
-            } else {
-                totalElements = 0L;
-            }
-        } else {
-            totalElements = 0L;
-        }
-
-        operations.add(Aggregation.skip((long) (page - 1) * size));
-        operations.add(Aggregation.limit(size));
-        Aggregation aggregation = Aggregation.newAggregation(operations);
 
 
-        List<Product> products = mongoTemplate.aggregate(aggregation, "products", Product.class).getMappedResults();
-
-        log.info(products.toString());
-
-
-        Pageable pageable = PageRequest.of(page - 1, size);
-        return PageableExecutionUtils.getPage(products, pageable, () -> totalElements);
-    }
+//    @Override
+//    public Page<Product> searchProducts(FilterProductsRequest request, int page, int size) {
+//        List<AggregationOperation> operations = new ArrayList<>();
+////        operations.add(createCategoriesLookup());
+////        operations.add(createSupplierLookup());
+//
+//        // Lookup: Thực hiện join với collection sub-products
+//        LookupOperation lookupOperation = Aggregation.lookup("sub-products", "_id", "productId", "subProducts");
+//        operations.add(lookupOperation);
+//        // Chỉ lấy sản phẩm có isDeleted là false hoặc null
+//        MatchOperation matchProductIsDeleted = Aggregation.match(Criteria.where("isDeleted").ne(true));
+//        operations.add(matchProductIsDeleted);
+//        if (request.getCategoryIds() != null) {
+//            List<String> categoryIds = Arrays.asList(request.getCategoryIds().split(","));
+//            MatchOperation matchCategoryIds = Aggregation.match(Criteria.where("categoryIds").all(categoryIds));
+//            operations.add(matchCategoryIds);
+//        }
+//        if(request.getSearch() != null) {
+//            MatchOperation matchSearch = Aggregation.match(Criteria.where("slug").regex(".*" + request.getSearch() + ".*", "i"));
+//            operations.add(matchSearch);
+//        }
+//        AggregationOperation addFinalPriceField = Aggregation.addFields()
+//                .addField("subProducts")
+//                .withValue(
+//                        new AggregationExpression() {
+//                            @Override
+//                            public Document toDocument(AggregationOperationContext context) {
+//                                return new Document("$map", new Document()
+//                                        .append("input", "$subProducts")  // Lấy danh sách subProducts
+//                                        .append("as", "subProduct")  // Đặt alias cho từng phần tử
+//                                        .append("in", new Document("$mergeObjects", Arrays.asList(
+//                                                "$$subProduct",  // Giữ lại tất cả các trường hiện tại của subProduct
+//                                                new Document("finalPrice", new Document("$ifNull", Arrays.asList(
+//                                                        "$$subProduct.discount",  // Kiểm tra nếu discount là null
+//                                                        "$$subProduct.price"  // Dùng price nếu discount là null
+//                                                )))
+//                                        ))));
+//                            }
+//                        }
+//                )
+//                .build();
+//
+//        operations.add(addFinalPriceField);
+//        // Kiểm tra ba trường hợp minPrice, maxPrice, và minPrice với maxPrice:
+//        if (request.getMinPrice() != null && request.getMaxPrice() != null) {
+//            // Truy vấn với minPrice và maxPrice, và sử dụng `finalPrice` cho subProducts
+//            MatchOperation matchByPriceRange = Aggregation.match(
+//                    Criteria.where("subProducts.finalPrice")
+//                            .gte(new Decimal128(request.getMinPrice()))
+//                            .lte(new Decimal128(request.getMaxPrice()))
+//            );
+//            operations.add(matchByPriceRange);
+//        } else if (request.getMinPrice() != null) {
+//            // Truy vấn chỉ với minPrice, và sử dụng `finalPrice`
+//            MatchOperation matchByMinPrice = Aggregation.match(
+//                    Criteria.where("subProducts.finalPrice")
+//                            .gte(new Decimal128(request.getMinPrice()))
+//            );
+//            operations.add(matchByMinPrice);
+//        } else if (request.getMaxPrice() != null) {
+//            // Truy vấn chỉ với maxPrice, và sử dụng `finalPrice`
+//            MatchOperation matchByMaxPrice = Aggregation.match(
+//                    Criteria.where("subProducts.finalPrice")
+//                            .lte(new Decimal128(request.getMaxPrice()))
+//            );
+//            operations.add(matchByMaxPrice);
+//        }
+//
+//        operations.add(Aggregation.sort(Sort.by(Sort.Direction.DESC, "updatedAt")));
+//        List<AggregationOperation> countOperations = new ArrayList<>(operations);
+//        countOperations.add(Aggregation.count().as("totalCount"));
+//        Aggregation countAggregation = Aggregation.newAggregation(countOperations);
+//        AggregationResults<Document> countResults = mongoTemplate.aggregate(countAggregation, "products", Document.class);
+//        long totalElements;
+//        if (!countResults.getMappedResults().isEmpty()) {
+//            Object totalCountObj = countResults.getMappedResults().getFirst().get("totalCount");
+//            if (totalCountObj instanceof Integer) {
+//                totalElements = ((Integer) totalCountObj).longValue();  // Convert Integer to Long
+//            } else if (totalCountObj instanceof Long) {
+//                totalElements = (Long) totalCountObj;
+//            } else {
+//                totalElements = 0L;
+//            }
+//        } else {
+//            totalElements = 0L;
+//        }
+//
+//        operations.add(Aggregation.skip((long) (page - 1) * size));
+//        operations.add(Aggregation.limit(size));
+//        Aggregation aggregation = Aggregation.newAggregation(operations);
+//
+//
+//        List<Product> products = mongoTemplate.aggregate(aggregation, "products", Product.class).getMappedResults();
+//
+//        log.info(products.toString());
+//
+//
+//        Pageable pageable = PageRequest.of(page - 1, size);
+//        return PageableExecutionUtils.getPage(products, pageable, () -> totalElements);
+//    }
 
     private LookupOperation createSupplierLookup() {
         return Aggregation.lookup("suppliers", "supplierId", "_id", "supplier");
@@ -147,9 +147,6 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
     private LookupOperation createCategoriesLookup() {
         return Aggregation.lookup("category", "categoryIds", "_id", "categories");
     }
-
-
-
 
 
     @Override
@@ -173,41 +170,52 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public Optional<ProductResponse> getProductById(String productId) {
-        List<AggregationOperation> operations = new ArrayList<>();
+//    @Override
+//    public Optional<ProductResponse> getProductById(String productId) {
+//        List<AggregationOperation> operations = new ArrayList<>();
+//
+//        // Thực hiện lookup từ collection "sub-products"
+//        LookupOperation lookupOperation = Aggregation.lookup("sub-products", "_id", "productId", "subProducts");
+//        operations.add(lookupOperation);
+//
+//        // Lọc các sản phẩm chưa bị xóa
+//        MatchOperation matchProductIsDeleted = Aggregation.match(Criteria.where("isDeleted").ne(true));
+//        operations.add(matchProductIsDeleted);
+//
+//        // Projection: Chuyển `_id` thành `id` và giữ nguyên các trường khác
+//        operations.add(Aggregation.project()
+//                .and("_id").as("id") // Đổi `_id` thành `id`
+//                .andInclude("title", "description", "slug", "supplierId", "content", "expiredDate", "options",
+//                        "images", "categoryIds", "createdAt", "updatedAt", "maxPrice", "minPrice",
+//                        "totalSold", "countRating", "averageRating")); // Giữ lại tất cả các trường cần thiết
+//
+//        // Lọc theo productId (sử dụng `id` thay vì `_id`)
+//        MatchOperation matchProductId = Aggregation.match(Criteria.where("id").is(productId));
+//        operations.add(matchProductId);
+//
+//        // Thêm lookup cho các category và supplier
+//        operations.add(createCategoriesLookup());
+//        operations.add(createSupplierLookup());
+//
+//        // Giới hạn kết quả trả về chỉ 1 sản phẩm
+//        operations.add(Aggregation.limit(1));
+//
+//        // Tiến hành truy vấn với pipeline
+//        Aggregation aggregation = Aggregation.newAggregation(operations);
+//
+//        // Kết quả trả về danh sách sản phẩm
+//        List<ProductResponse> products = mongoTemplate.aggregate(aggregation, "products", ProductResponse.class).getMappedResults();
+//
+//        // Kiểm tra và log sản phẩm
+//        if (products.isEmpty()) {
+//            log.warn("No product found with id: " + productId);
+//            return Optional.empty();
+//        }
+//
+//        log.info("Product found: " + products.get(0)); // Log sản phẩm đầu tiên
+//        return Optional.of(products.get(0)); // Chỉ trả về sản phẩm đầu tiên
+//    }
 
-        // Lookup: Thực hiện join với collection sub-products
-        LookupOperation lookupOperation = Aggregation.lookup("sub-products", "_id", "productId", "subProducts");
-        operations.add(lookupOperation);
-
-        MatchOperation matchProductIsDeleted = Aggregation.match(Criteria.where("isDeleted").ne(true));
-        operations.add(matchProductIsDeleted);
-
-        // Match theo productId
-        MatchOperation matchProductId = Aggregation.match(Criteria.where("_id").is(productId));
-        operations.add(matchProductId);
-
-        // Thực hiện lookup các thông tin liên quan đến category và supplier
-        operations.add(createCategoriesLookup());
-        operations.add(createSupplierLookup());
-
-        // Chỉ lấy 1 sản phẩm, sử dụng limit(1)
-        operations.add(Aggregation.limit(1));
-
-        // Tiến hành truy vấn
-        Aggregation aggregation = Aggregation.newAggregation(operations);
-        List<ProductResponse> products = mongoTemplate.aggregate(aggregation, "products", ProductResponse.class).getMappedResults();
-
-        // Kiểm tra lại kết quả trả về, log sản phẩm để kiểm tra
-        if (products.isEmpty()) {
-            log.warn("No product found with id: " + productId);
-            return Optional.empty();
-        }
-
-        log.info("Product found: " + products.get(0));  // Log sản phẩm đầu tiên
-        return Optional.of(products.get(0));  // Chỉ trả về sản phẩm đầu tiên
-    }
 
 
 
@@ -228,11 +236,10 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
             MatchOperation matchCategoryIds = Aggregation.match(Criteria.where("categoryIds").all(categoryIds));
             operations.add(matchCategoryIds);
         }
-        if(request.getSearch() != null) {
+        if (request.getSearch() != null) {
             MatchOperation matchSearch = Aggregation.match(Criteria.where("slug").regex(".*" + request.getSearch() + ".*", "i"));
             operations.add(matchSearch);
         }
-
 
 
         AggregationOperation addFinalPriceField = Aggregation.addFields()
@@ -268,7 +275,6 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
         operations.add(addMinMaxFields);
 
 
-
         // Kiểm tra ba trường hợp minPrice, maxPrice, và minPrice với maxPrice:
         if (request.getMinPrice() != null && request.getMaxPrice() != null) {
             // Truy vấn với minPrice và maxPrice, và sử dụng `finalPrice` cho subProducts
@@ -326,11 +332,6 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
         Pageable pageable = PageRequest.of(page - 1, size);
         return PageableExecutionUtils.getPage(products, pageable, () -> totalElements);
     }
-
-
-
-
-
 
 
 //

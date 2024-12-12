@@ -11,9 +11,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductCustomRepository {
-    Page<Product> searchProducts(FilterProductsRequest filterRequest, int page, int size);
     List<String> getTopSoldProducts();
-    Optional<ProductResponse> getProductById(String productId);
+//    Optional<ProductResponse> getProductById(String productId);
 
     Page<ProductResponse> searchProductsV2(FilterProductsRequest filterRequest, int page, int size);
 }
