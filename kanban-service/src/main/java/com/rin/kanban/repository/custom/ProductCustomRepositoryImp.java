@@ -326,8 +326,6 @@ public class ProductCustomRepositoryImp implements ProductCustomRepository {
 
         List<ProductResponse> products = mongoTemplate.aggregate(aggregation, "products", ProductResponse.class).getMappedResults();
 
-        log.info(products.toString());
-
 
         Pageable pageable = PageRequest.of(page - 1, size);
         return PageableExecutionUtils.getPage(products, pageable, () -> totalElements);
