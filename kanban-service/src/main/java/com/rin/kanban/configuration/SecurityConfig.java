@@ -28,7 +28,8 @@ public class SecurityConfig {
             "/sub-products/product-detail/*",
             "/products/related/*",
             "/categories/get-tree",
-            "/categories"
+            "/categories",
+            "/rating"
     };
 
     CustomJwtDecoder customJwtDecoder;
